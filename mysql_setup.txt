@@ -1,0 +1,24 @@
+DROP
+    DATABASE IF EXISTS shopping_site_data;
+CREATE DATABASE shopping_site_data; 
+USE
+    shopping_site_data;
+DROP TABLE IF EXISTS
+    userlist;
+CREATE TABLE userlist(
+    Idnumber VARCHAR(10) NOT NULL,
+    Username VARCHAR(20) NOT NULL,
+    PASSWORD VARCHAR(20) NOT NULL,
+    Deposit INT NOT NULL DEFAULT '0',
+    PRIMARY KEY(Idnumber)
+);
+DROP TABLE IF EXISTS
+    detail;
+CREATE TABLE detail(
+    DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Withdrawal INT NOT NULL DEFAULT '0',
+    Deposit INT NOT NULL DEFAULT '0',
+    Balance INT NOT NULL DEFAULT '0',
+    Idnumber VARCHAR(10) NOT NULL,
+    FOREIGN KEY(Idnumber) REFERENCES userlist(Idnumber)
+);
