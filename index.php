@@ -4,22 +4,23 @@ session_start();
 $ErrorMessage = "";
 
 if (isset($_POST["btnOK"])) {
-  $sIdNumber = $_POST["txtIdNumber"];
-  $sUserName = $_POST["txtUserName"];
-  $sPassword = $_POST["txtPassword"];
+  $username = $_POST["username"];
+  $password = $_POST["password"];
 
   require_once("connectconfig.php");
-  $sql = "SELECT * FROM userlist where Idnumber = '$sIdNumber'";
-  $result = $link->query($sql);
-  $row = @$result->fetch_row();
+  $sql_username = "SELECT * FROM member WHERE username = '$username'";
+  $username_row = $link->query($sql_username)->fetch_row();
 
-  if ($row !== null && $sIdNumber != null && $sUserName != null && $sPassword != null && $row[0] == $sIdNumber && $row[1] == $sUserName && $row[2] == $sPassword) {
-    $_SESSION["id"] = $sIdNumber;
-    $_SESSION["userName"] = $sUserName;
-    header("Location: secret.php");
+  if ($username_row !== null && $username != "" && $password != "" && $username_row[0] == $username && $username_row[4] == $password) {
+    $_SESSION["username"] = $username;
+    if ($_SESSION["username"] == "admin") {
+      header("Location: management_side.php");
+    } else {
+      header("Location: member_side.php");
+    }
     exit();
   } else {
-    $ErrorMessage = "身分證字號、使用者代號或網銀密碼有誤";
+    $ErrorMessage = "使用者代號或密碼有誤";
   }
 }
 
@@ -59,7 +60,7 @@ if (isset($_POST["btnOK"])) {
 </head>
 
 <body>
-  <form id="form1" name="form1" method="post" action="index.php">
+  <form method="post" action="index.php">
     <table class="table table-bordered">
       <thead>
         <tr class="bg-primary text-light">
@@ -70,21 +71,15 @@ if (isset($_POST["btnOK"])) {
       </thead>
       <tbody>
         <tr>
-          <td class="align-middle">身分證字號</td>
-          <td>
-            <input type="text" name="txtIdNumber" id="txtIdNumber" />
-          </td>
-        </tr>
-        <tr>
           <td class="align-middle">使用者代號</td>
           <td>
-            <input type="text" name="txtUserName" id="txtUserName" />
+            <input type="text" name="username" id="username" />
           </td>
         </tr>
         <tr>
-          <td class="align-middle">網銀密碼</td>
+          <td class="align-middle">密碼</td>
           <td>
-            <input type="password" name="txtPassword" id="txtPassword" />
+            <input type="password" name="password" id="password" />
           </td>
         </tr>
         <tr>

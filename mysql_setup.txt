@@ -1,24 +1,170 @@
 DROP
     DATABASE IF EXISTS shopping_site_data;
-CREATE DATABASE shopping_site_data; 
-USE
+CREATE DATABASE shopping_site_data; USE
     shopping_site_data;
 DROP TABLE IF EXISTS
-    userlist;
-CREATE TABLE userlist(
-    Idnumber VARCHAR(10) NOT NULL,
-    Username VARCHAR(20) NOT NULL,
-    PASSWORD VARCHAR(20) NOT NULL,
-    Deposit INT NOT NULL DEFAULT '0',
-    PRIMARY KEY(Idnumber)
+    member;
+CREATE TABLE member(
+    `username` VARCHAR(20) NOT NULL,
+    `email` VARCHAR(64) NOT NULL,
+    `cellphone` VARCHAR(10) NOT NULL,
+    `address` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(20) NOT NULL,
+    PRIMARY KEY(username)
+); INSERT INTO member(
+    username,
+    email,
+    cellphone,
+    address,
+    PASSWORD
+)
+VALUES(
+    'admin',
+    'zed2786328@gmail.com',
+    '0920347637',
+    'taichung',
+    'Ghjj3488'
+);
+INSERT INTO member(
+    username,
+    email,
+    cellphone,
+    address,
+    PASSWORD
+)
+VALUES(
+    'karta',
+    'qwer@qwer.com',
+    '0920555666',
+    'tainan',
+    'Pass1234'
 );
 DROP TABLE IF EXISTS
-    detail;
-CREATE TABLE detail(
-    DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Withdrawal INT NOT NULL DEFAULT '0',
-    Deposit INT NOT NULL DEFAULT '0',
-    Balance INT NOT NULL DEFAULT '0',
-    Idnumber VARCHAR(10) NOT NULL,
-    FOREIGN KEY(Idnumber) REFERENCES userlist(Idnumber)
+    product_list;
+CREATE TABLE product_list(
+    `product_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `product_name` VARCHAR(100),
+    `product_price` INT(11) UNSIGNED,
+    `product_stocks` INT(11) UNSIGNED,
+    `product_images` VARCHAR(100),
+    `product_description` TEXT,
+    PRIMARY KEY(product_id)
+); INSERT INTO product_list(
+    product_name,
+    product_price,
+    product_stocks,
+    product_images,
+    product_description
+)
+VALUES(
+    'BEST Piano',
+    '500000',
+    '10',
+    'piano.png',
+    'this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.this is piano.'
 );
+INSERT INTO product_list(
+    product_name,
+    product_price,
+    product_stocks,
+    product_images,
+    product_description
+)
+VALUES(
+    'GOOD Computer',
+    '40000',
+    '9',
+    'computer.png',
+    'A good computer in taiwan.A good computer in taiwan.A good computer in taiwan.A good computer in taiwan.A good computer in taiwan.'
+);
+INSERT INTO product_list(
+    product_name,
+    product_price,
+    product_stocks,
+    product_images,
+    product_description
+)
+VALUES(
+    'Cheap Food',
+    '300',
+    '65',
+    'food.png',
+    'Very cheap, but very yummy, great.Very cheap, but very yummy, great.
+    Very cheap, but very yummy, great.'
+);
+DROP TABLE IF EXISTS
+    shopping_cart;
+CREATE TABLE shopping_cart(
+    `quantity` INT(11) UNSIGNED,
+    `username` VARCHAR(20) NOT NULL,
+    `product_id` INT(11) UNSIGNED NOT NULL,
+    FOREIGN KEY(username) REFERENCES member(username),
+    FOREIGN KEY(product_id) REFERENCES product_list(product_id)
+); INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('3', 'karta', '1');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('1', 'karta', '3');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('5', 'karta', '2');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('1', 'karta', '3');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('5', 'karta', '2');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('5', 'admin', '2');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('1', 'admin', '3');
+INSERT INTO shopping_cart(
+    quantity,
+    username,
+    product_id
+)
+VALUES('5', 'admin', '2');
+SELECT
+    SUM(a.quantity),
+    a.username,
+    a.product_id,
+    b.product_name,
+    b.product_price,
+    b.product_images
+FROM
+    shopping_cart AS a
+INNER JOIN product_list AS b
+ON
+    a.product_id = b.product_id
+WHERE
+    a.username = 'admin'
+GROUP BY
+    a.username,
+    a.product_id,
+    b.product_name,
+    b.product_price,
+    b.product_images

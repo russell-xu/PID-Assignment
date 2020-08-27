@@ -10,25 +10,57 @@ if (isset($_POST["btnHome"])) {
 $ErrorMessage = "";
 
 if (isset($_POST["btnOK"])) {
-  $sIdNumber = $_POST["txtIdNumber"];
-  $sUserName = $_POST["txtUserName"];
-  $sPassword = $_POST["txtPassword"];
+  $username = $_POST["registered_username"];
+  $email = $_POST["registered_email"];
+  $cellphone = $_POST["registered_cellphone"];
+  $address = $_POST["registered_address"];
+  $password = $_POST["registered_password"];
 
   require_once("connectconfig.php");
-  $sql = "select * from userlist where Idnumber='$sIdNumber'";
-  $result = $link->query($sql);
-  $num = $result->num_rows;
 
-  if (preg_match("/^[A-Z]{1}[12ABCD]{1}[0-9]{8}$/", $sIdNumber) && trim($sUserName) != "" && preg_match('/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{8}/', $sPassword) && $num == 0) {
-    $_SESSION["userName"] = $sUserName;
-    $sql = <<<multi
-  INSERT INTO userlist(IdNumber, UserName, Password) VALUES('$sIdNumber', '$sUserName', '$sPassword');
-  multi;
-    $link->query($sql);
-    header("Location: registration_success.php");
-    exit();
+  $sql_username = "select * from member where username='$username'";
+  $username_num_rows = $link->query($sql_username)->num_rows;
+
+  $sql_email = "select * from member where email='$email'";
+  $email_num_rows = $link->query($sql_email)->num_rows;
+
+  $sql_cellphone = "select * from member where cellphone='$cellphone'";
+  $cellphone_num_rows = $link->query($sql_cellphone)->num_rows;
+
+  $username_verification = trim($username) != "";
+  $email_verification = filter_var($email, FILTER_VALIDATE_EMAIL);
+  $cellphone_verification = preg_match('/^[0][0-9]{9}$/', $cellphone);
+  $address_verification = trim($address) != "";
+  $password_verification = preg_match('/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{8}/', $password);
+
+  if ($username_verification && $email_verification &&  $cellphone_verification && $address_verification && $password_verification) {
+    if ($username_num_rows == 0 && $email_num_rows == 0 && $cellphone_num_rows == 0) {
+      $_SESSION["userName"] = $username;
+      $sql_registered = <<<multi
+        INSERT INTO member(
+          username,
+          email,
+          cellphone,
+          address,
+          PASSWORD
+        )
+        VALUES(
+            '$username',
+            '$email',
+            '$cellphone',
+            '$address',
+            '$password'
+        );
+      multi;
+      $link->query($sql_registered);
+      header("Location: registration_success.php");
+      exit();
+    } else {
+      $ErrorMessage = "使用者代號、電子信箱或手機號碼已被使用！";
+    }
   } else {
-    $ErrorMessage = "身分證字號、使用者代號或網銀密碼有誤";
+    $ErrorMessage = "使用者代號、電子信箱、手機號碼、住址或密碼有誤！
+    ";
   }
 }
 ?>
@@ -67,7 +99,7 @@ if (isset($_POST["btnOK"])) {
 </head>
 
 <body>
-  <form id="form2" name="form2" method="post" action="registered.php">
+  <form method="post" action="registered.php">
     <table class="table table-bordered">
       <thead>
         <tr class="bg-primary text-light">
@@ -78,21 +110,33 @@ if (isset($_POST["btnOK"])) {
       </thead>
       <tbody>
         <tr>
-          <td class="align-middle">身分證字號</td>
-          <td>
-            <input type="text" name="txtIdNumber" id="txtIdNumber" />
-          </td>
-        </tr>
-        <tr>
           <td class="align-middle">使用者代號</td>
           <td>
-            <input type="text" name="txtUserName" id="txtUserName" />
+            <input type="text" name="registered_username" id="registered_username" />
           </td>
         </tr>
         <tr>
-          <td class="align-middle">網銀密碼</td>
+          <td class="align-middle">電子信箱</td>
           <td>
-            <input type="password" name="txtPassword" id="txtPassword" />
+            <input type="email" name="registered_email" id="registered_email" />
+          </td>
+        </tr>
+        <tr>
+          <td class="align-middle">手機號碼</td>
+          <td>
+            <input type="tel" name="registered_cellphone" id="registered_cellphone" />
+          </td>
+        </tr>
+        <tr>
+          <td class="align-middle">住址</td>
+          <td>
+            <input type="text" name="registered_address" id="registered_address" />
+          </td>
+        </tr>
+        <tr>
+          <td class="align-middle">密碼</td>
+          <td>
+            <input type="password" name="registered_password" id="registered_password" />
           </td>
         </tr>
         <tr>

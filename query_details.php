@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION["userName"]) || $_SESSION["userName"] == "Guest") {
+if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
     header("Location: index.php");
     exit();
 }
@@ -71,7 +71,7 @@ $result = $link->query($sql);
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+                <?php while ($row = $result->fetch_assoc()) { ?>
                     <tr class="text-center">
                         <td class="align-middle"><?= $row['DATE'] ?></td>
                         <td class="align-middle"><?= $row['Withdrawal'] ?></td>
