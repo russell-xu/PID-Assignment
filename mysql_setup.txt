@@ -167,4 +167,25 @@ GROUP BY
     a.product_id,
     b.product_name,
     b.product_price,
-    b.product_images
+    b.product_images;
+
+DROP TABLE IF EXISTS
+    orders;
+CREATE TABLE orders(
+    `orders_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `total_price` INT(11) UNSIGNED,
+    `paytype` ENUM('ATM匯款', '線上刷卡', '貨到付款') NOT NULL,
+    `username` VARCHAR(20) NOT NULL,
+    PRIMARY KEY(orders_id),
+    FOREIGN KEY(username) REFERENCES member(username)
+);
+
+DROP TABLE IF EXISTS
+    order_detail;
+CREATE TABLE order_detail(
+    `orders_id` INT(11) UNSIGNED NOT NULL,
+    `product_id` INT(11) UNSIGNED NOT NULL,
+    `quantity` INT(11) UNSIGNED,
+    FOREIGN KEY(orders_id) REFERENCES orders(orders_id),
+    FOREIGN KEY(product_id) REFERENCES product_list(product_id)
+);

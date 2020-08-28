@@ -1,14 +1,17 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-    header("Location: index.php");
-    exit();
+  header("Location: index.php");
+  exit();
 }
 
-$username = $_SESSION["username"];
-
 require_once("connectconfig.php");
-$sql = <<<multi
+
+function grab_shopping_cart_information()
+{
+  require("connectconfig.php");
+  $username = $_SESSION["username"];
+  $sql_product_cart = <<<multi
     SELECT
         SUM(a.quantity),
         a.username,
@@ -30,131 +33,228 @@ $sql = <<<multi
         b.product_price,
         b.product_images
     multi;
-$result = $link->query($sql);
+  return $link->query($sql_product_cart);
+}
+$result = grab_shopping_cart_information();
+
+function Update_purchase_quantity()
+{
+  global $quantity;
+  require("connectconfig.php");
+  $username = $_SESSION["username"];
+  $sql_quantity = <<<multi
+    SELECT
+        SUM(`quantity`)
+    FROM
+        shopping_cart
+    WHERE
+        username = '$username'
+    multi;
+  $quantity_row = $link->query($sql_quantity)->fetch_row();
+  return $quantity_row[0];
+}
+
+$sql_sum_price = <<<multi
+  SELECT
+      SUM(b.product_price)
+  FROM
+      shopping_cart AS a
+  INNER JOIN product_list AS b
+  ON
+      a.product_id = b.product_id
+  WHERE
+      a.username = 'karta'
+  multi;
+$sum_price = $link->query($sql_sum_price)->fetch_row();
+
+if (isset($_POST["delete_cart_product"])) {
+  global $result;
+
+  $username = $_SESSION["username"];
+  $product_id = $_POST["product_id"];
+
+  $sql_delete_cart_product = <<<multi
+  DELETE
+  FROM
+      shopping_cart
+  WHERE
+      username = '$username' AND product_id = '$product_id'
+  multi;
+  $link->query($sql_delete_cart_product);
+  $result = grab_shopping_cart_information();
+}
+
+// if (isset($_POST["checkout_btn"])) {
+//   global $result;
+
+//   $username = $_SESSION["username"];
+//   $product_id = $_POST["product_id"];
+
+//   $sql_delete_cart_product = <<<multi
+//   DELETE
+//   FROM
+//       shopping_cart
+//   WHERE
+//       username = '$username' AND product_id = '$product_id'
+//   multi;
+//   $link->query($sql_delete_cart_product);
+//   $result = grab_shopping_cart_information();
+// }
 ?>
 
 <!DOCTYPE html>
 <html>
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <title>Lag - Member Page</title>
-    <style>
-        body {
-            font-size: 20px;
-            font-family: Microsoft JhengHei;
-            padding-top: 62px;
-        }
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <title>Lag - Member Page</title>
+  <style>
+    body {
+      font-size: 20px;
+      font-family: Microsoft JhengHei;
+      padding-top: 62px;
+    }
 
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 100;
-        }
+    .navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+    }
 
-        .nav_item_form {
-            display: flex;
-            align-items: center;
-        }
+    .nav_item_form {
+      display: flex;
+      align-items: center;
+    }
 
-        .title {
-            margin: 0;
-        }
+    .title {
+      margin: 0;
+    }
 
-        .table td {
-            text-align: center;
-            padding: 20px;
-        }
+    .table td {
+      text-align: center;
+      padding: 20px;
+    }
 
-        .product_images {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-        }
-    </style>
+    .product_images {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    #checkout_btn {
+      font-size: 30px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    #total_amount {
+      margin: 10px 0;
+    }
+  </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">我是購物網站</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="shopping_cart.php">購物車</a>
-                </li>
-                <li class="nav-item nav_item_form">
-                    <form action="" method="post">
-                        <input class="" type="submit" name="btnSignOut" id="btnSignOut" value="登出" />
-                    </form>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <div>
-        <table class="table table-bordered">
-            <thead>
-                <tr class="bg-primary text-light">
-                    <td colspan="6">
-                        <p class="title">會員系統 － 查詢明細</p>
-                    </td>
-                </tr>
-                <tr class="bg-success text-light">
-                    <td>
-                        <p class="title">商品名字</p>
-                    </td>
-                    <td>
-                        <p class="title">商品圖片</p>
-                    </td>
-                    <td>
-                        <p class="title">單價</p>
-                    </td>
-                    <td>
-                        <p class="title">數量</p>
-                    </td>
-                    <td>
-                        <p class="title">總計</p>
-                    </td>
-                    <td>
-                        <p class="title">操作</p>
-                    </td>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $result->fetch_assoc()) { ?>
-                    <tr class="text-center">
-                        <td class="align-middle"><?= $row['product_name'] ?></td>
-                        <td class="align-middle">
-                            <img class="product_images" src="./img/<?= $row['product_images'] ?>" alt="" srcset="">
-                        </td>
-                        <td class="align-middle"><?= $row['product_price'] ?></td>
-                        <td class="align-middle"><?= $row['SUM(a.quantity)'] ?></td>
-                        <td class="align-middle"><?= $row['SUM(a.quantity)'] * $row['product_price'] ?></td>
-                        <td class="align-middle">
-                            <input type="submit" value="刪除">
-                        </td>
-                    </tr>
-                <?php } ?>
-                <tr class="bg-primary text-light">
-                    <td colspan="6">
-                        <a href="secret.php" class="btn btn-warning" role="button">回到首頁</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="member_side.php">我是購物網站</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="shopping_cart.php">購物車
+            <span class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
+          </a>
+        </li>
+        <li class="nav-item nav_item_form">
+          <form action="" method="post">
+            <input class="btn btn-outline-light" type="submit" name="btnSignOut" id="btnSignOut" value="登出" />
+          </form>
+        </li>
+      </ul>
     </div>
+  </nav>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <table class="table table-bordered">
+          <thead>
+            <tr class="bg-primary text-light">
+              <td colspan="6">
+                <p class="title">會員系統 － 購物車</p>
+              </td>
+            </tr>
+            <tr class="bg-success text-light">
+              <td>
+                <p class="title">商品名字</p>
+              </td>
+              <td>
+                <p class="title">商品圖片</p>
+              </td>
+              <td>
+                <p class="title">單價</p>
+              </td>
+              <td>
+                <p class="title">數量</p>
+              </td>
+              <td>
+                <p class="title">總計</p>
+              </td>
+              <td>
+                <p class="title">操作</p>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while ($row = $result->fetch_assoc()) { ?>
+              <tr class="text-center">
+                <td class="align-middle"><?= $row['product_name'] ?></td>
+                <td class="align-middle">
+                  <img class="product_images" src="./img/<?= $row['product_images'] ?>" alt="" srcset="">
+                </td>
+                <td class="align-middle">$<?= $row['product_price'] ?></td>
+                <td class="align-middle"><?= $row['SUM(a.quantity)'] ?></td>
+                <td class="align-middle">$<?= $row['SUM(a.quantity)'] * $row['product_price'] ?></td>
+                <td class="align-middle">
+                  <form action="" method="post">
+                    <input type="hidden" name="product_id" value="<?= $row['product_id'] ?>">
+                    <input class="btn btn-outline-danger" type="submit" name="delete_cart_product" value="刪除">
+                  </form>
+                </td>
+              </tr>
+            <?php } ?>
+            <tr class="table-info">
+              <td colspan="6">
+                <span>運費：$60</span>
+                <h3 id="total_amount">總金額：$<?= $sum_price[0] + 60 ?></h3>
+                <label for="cars">選擇付費方式：</label>
+                <select name="paytype" form="checkout">
+                  <option value="volvo">ATM匯款</option>
+                  <option value="saab">線上刷卡</option>
+                  <option value="opel">貨到付款</option>
+                </select>
+                <form action="" method="post" id="checkout">
+                  <input class="btn btn-success" type="button" id="checkout_btn" name="checkout_btn" value="結帳">
+                </form>
+                <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 
 </html>

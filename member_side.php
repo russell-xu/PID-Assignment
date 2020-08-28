@@ -12,6 +12,67 @@ if (isset($_POST["btnSignOut"])) {
 }
 
 require_once("connectconfig.php");
+
+if (isset($_POST["add_cart_input"])) {
+  $username = $_SESSION["username"];
+  $product_id = $_POST["product_id"];
+  $purchase_quantity = $_POST["purchase_quantity"];
+  $product_stocks = $_POST["product_stocks"];
+
+  $sql_add_cart = <<<multi
+    INSERT INTO shopping_cart(
+        quantity,
+        username,
+        product_id
+    )
+    VALUES('$purchase_quantity', '$username', '$product_id');
+  multi;
+  $link->query($sql_add_cart);
+  reduce_stocks();
+}
+
+function reduce_stocks()
+{
+  $product_id = $_POST["product_id"];
+  $purchase_quantity = $_POST["purchase_quantity"];
+  require("connectconfig.php");
+  $sql_product_stocks = <<<multi
+    SELECT
+      product_stocks
+    FROM
+      product_list
+    WHERE
+      product_id = '$product_id'
+  multi;
+  $product_stocks_row = $link->query($sql_product_stocks)->fetch_row();
+
+  $sql_reduce_stocks = <<<multi
+    UPDATE
+      product_list
+    SET
+      `product_stocks` = '$product_stocks_row[0]' - '$purchase_quantity'
+    WHERE
+      `product_id` = '$product_id'
+  multi;
+  $link->query($sql_reduce_stocks);
+}
+
+function Update_purchase_quantity()
+{
+  require("connectconfig.php");
+  $username = $_SESSION["username"];
+  $sql_quantity = <<<multi
+    SELECT
+        SUM(`quantity`)
+    FROM
+        shopping_cart
+    WHERE
+        username = '$username'
+    multi;
+  $quantity_row = $link->query($sql_quantity)->fetch_row();
+  return $quantity_row[0];
+}
+
 $sql_product_list = <<<multi
   SELECT
       *
@@ -98,6 +159,10 @@ $result = $link->query($sql_product_list);
     .product .price_addcart_box form .add_cart_input {
       background-color: yellowgreen;
     }
+
+    .product .price_addcart_box form .purchase_quantity {
+      width: 50px;
+    }
   </style>
 </head>
 
@@ -113,11 +178,13 @@ $result = $link->query($sql_product_list);
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="shopping_cart.php">購物車</a>
+          <a class="nav-link" href="shopping_cart.php">購物車
+            <span class="badge badge-danger"><?= Update_purchase_quantity() ?></span>
+          </a>
         </li>
         <li class="nav-item nav_item_form">
           <form action="" method="post">
-            <input class="" type="submit" name="btnSignOut" id="btnSignOut" value="登出" />
+            <input class="btn btn-outline-light" type="submit" name="btnSignOut" id="btnSignOut" value="登出" />
           </form>
         </li>
       </ul>
@@ -143,8 +210,12 @@ $result = $link->query($sql_product_list);
             </div>
             <div class="price_addcart_box">
               <h3>$<?= $row['product_price'] ?></h3>
+              <h6>庫存：<?= $row['product_stocks'] ?></h6>
               <form action="" method="post">
-                <input class="add_cart_input" type="submit" value="加入購物車">
+                <input type="hidden" name="product_stocks" value="<?= $row['product_stocks'] ?>">
+                <input type="hidden" name="product_id" value="<?= $row['product_id'] ?>">
+                <input type="number" name="purchase_quantity" class="purchase_quantity" min="1" max="99" value="1">
+                <input class="add_cart_input" type="submit" name="add_cart_input" value="加入購物車">
               </form>
             </div>
           </div>
@@ -152,8 +223,6 @@ $result = $link->query($sql_product_list);
       </div>
     <?php } ?>
   </div>
-
-
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
