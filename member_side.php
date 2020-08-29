@@ -19,42 +19,17 @@ if (isset($_POST["add_cart_input"])) {
   $purchase_quantity = $_POST["purchase_quantity"];
   $product_stocks = $_POST["product_stocks"];
 
-  $sql_add_cart = <<<multi
-    INSERT INTO shopping_cart(
-        quantity,
-        username,
-        product_id
-    )
-    VALUES('$purchase_quantity', '$username', '$product_id');
-  multi;
-  $link->query($sql_add_cart);
-  reduce_stocks();
-}
-
-function reduce_stocks()
-{
-  $product_id = $_POST["product_id"];
-  $purchase_quantity = $_POST["purchase_quantity"];
-  require("connectconfig.php");
-  $sql_product_stocks = <<<multi
-    SELECT
-      product_stocks
-    FROM
-      product_list
-    WHERE
-      product_id = '$product_id'
-  multi;
-  $product_stocks_row = $link->query($sql_product_stocks)->fetch_row();
-
-  $sql_reduce_stocks = <<<multi
-    UPDATE
-      product_list
-    SET
-      `product_stocks` = '$product_stocks_row[0]' - '$purchase_quantity'
-    WHERE
-      `product_id` = '$product_id'
-  multi;
-  $link->query($sql_reduce_stocks);
+  if ($purchase_quantity > 0) {
+    $sql_add_cart = <<<multi
+      INSERT INTO shopping_cart(
+          quantity,
+          username,
+          product_id
+      )
+      VALUES('$purchase_quantity', '$username', '$product_id');
+    multi;
+    $link->query($sql_add_cart);
+  }
 }
 
 function Update_purchase_quantity()
@@ -179,7 +154,7 @@ $result = $link->query($sql_product_list);
         </li>
         <li class="nav-item">
           <a class="nav-link" href="shopping_cart.php">購物車
-            <span class="badge badge-danger"><?= Update_purchase_quantity() ?></span>
+            <span id="update_purchase_quantity" class="badge badge-danger"><?= Update_purchase_quantity() ?></span>
           </a>
         </li>
         <li class="nav-item nav_item_form">
@@ -211,12 +186,13 @@ $result = $link->query($sql_product_list);
             <div class="price_addcart_box">
               <h3>$<?= $row['product_price'] ?></h3>
               <h6>庫存：<?= $row['product_stocks'] ?></h6>
-              <form action="" method="post">
+              <form class="add_cart" name="add_cart" action="" method="post" target="the_iframe">
                 <input type="hidden" name="product_stocks" value="<?= $row['product_stocks'] ?>">
                 <input type="hidden" name="product_id" value="<?= $row['product_id'] ?>">
-                <input type="number" name="purchase_quantity" class="purchase_quantity" min="1" max="99" value="1">
+                <input class="purchase_quantity" type="number" name="purchase_quantity" class="purchase_quantity" min="0" max="<?= $row['product_stocks'] ?>" value="0">
                 <input class="add_cart_input" type="submit" name="add_cart_input" value="加入購物車">
               </form>
+              <iframe id="is_iframe" name="the_iframe" style="display:none;"></iframe>
             </div>
           </div>
         </div>
@@ -227,6 +203,50 @@ $result = $link->query($sql_product_list);
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <script>
+    let add_cart = document.querySelectorAll('.add_cart')
+    let update_purchase_quantity = document.querySelector('#update_purchase_quantity')
+    let purchase_quantity = document.querySelectorAll('.purchase_quantity')
+    for (let i = 0; i < add_cart.length; i++) {
+      add_cart[i].addEventListener("submit", () => {
+        update_purchase_quantity.innerHTML += purchase_quantity[i].value
+
+        console.log('ok');
+      })
+    }
+
+
+
+
+    // let add_cart_form = document.querySelector('#add_cart')
+    // add_cart_form.addEventListener("submit", () => {
+    //   let userName = $('#username'),
+    //     passWord = $('#password'),
+    //     fileBtn = $('#file'),
+    //     btn = $('#btn');
+
+    //   btn.addEventListener('click', () => {
+    //     let fd = new FormData();
+    //     fd.append('userName', userName.value);
+    //     fd.append('passWord', passWord.value);
+    //     fd.append('file', fileBtn.files[0]);
+
+    //     fetch('http://localhost:4000/login', {
+    //       method: 'POST',
+    //       body: fd,
+    //     }).then(res => {
+    //       if (res.ok) {
+    //         return res.json();
+    //       } else {
+    //         console.log('error')
+    //       }
+    //     }).then(res => {
+    //       console.log('res is', res);
+    //     });
+    //   });
+    // })
+  </script>
 </body>
 
 </html>

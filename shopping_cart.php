@@ -39,7 +39,6 @@ $result = grab_shopping_cart_information();
 
 function Update_purchase_quantity()
 {
-  global $quantity;
   require("connectconfig.php");
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
@@ -67,6 +66,8 @@ $sql_sum_price = <<<multi
   multi;
 $sum_price = $link->query($sql_sum_price)->fetch_row();
 
+$shipping = $sum_price[0] != null ? 60 : 0;
+
 if (isset($_POST["delete_cart_product"])) {
   global $result;
 
@@ -84,22 +85,102 @@ if (isset($_POST["delete_cart_product"])) {
   $result = grab_shopping_cart_information();
 }
 
-// if (isset($_POST["checkout_btn"])) {
-//   global $result;
+if (isset($_POST["checkout_btn"])) {
+  if ($sum_price[0] != null) {
+    global $result;
+    global $sum_price;
 
-//   $username = $_SESSION["username"];
-//   $product_id = $_POST["product_id"];
+    $username = $_SESSION["username"];
+    $paytype = $_POST["paytype"];
 
-//   $sql_delete_cart_product = <<<multi
-//   DELETE
-//   FROM
-//       shopping_cart
-//   WHERE
-//       username = '$username' AND product_id = '$product_id'
-//   multi;
-//   $link->query($sql_delete_cart_product);
-//   $result = grab_shopping_cart_information();
-// }
+    $sql_add_order = <<<multi
+    INSERT INTO orders(
+        total_price,
+        paytype,
+        username
+    )
+    VALUES(
+        {$sum_price[0]} + 60,
+        '$paytype',
+        '$username'
+    );
+  multi;
+    $link->query($sql_add_order);
+
+    $sql_order_id = <<<multi
+    SELECT
+      orders_id
+    FROM
+      `orders`
+    ORDER BY
+      orders_id
+    DESC
+    LIMIT 0, 1
+  multi;
+    $order_id_row = $link->query($sql_order_id)->fetch_row();
+
+    while ($row = $result->fetch_assoc()) {
+      $sql_checkout = <<<multi
+      INSERT INTO order_detail(
+          orders_id,
+          product_id,
+          quantity
+      )
+      VALUES(
+          '{$order_id_row[0]}',
+          '{$row['product_id']}',
+          '{$row['SUM(a.quantity)']}'
+      );
+    multi;
+      $link->query($sql_checkout);
+
+      // reduce_stocks
+      $sql_product_stocks = <<<multi
+      SELECT
+        product_stocks
+      FROM
+        product_list
+      WHERE
+        product_id = '{$row['product_id']}'
+    multi;
+      $product_stocks_row = $link->query($sql_product_stocks)->fetch_row();
+
+      $sql_quantity = <<<multi
+      SELECT
+        SUM(quantity)
+      FROM
+        shopping_cart
+      WHERE
+        username = '$username' AND product_id = '{$row['product_id']}'
+    multi;
+      $quantity_row = $link->query($sql_quantity)->fetch_row();
+
+      $reduced_quantity = $product_stocks_row[0] - $quantity_row[0];
+
+      $sql_reduce_stocks = <<<multi
+      UPDATE
+        product_list
+      SET
+        `product_stocks` = '$reduced_quantity'
+      WHERE
+        `product_id` = '{$row['product_id']}'
+    multi;
+      $link->query($sql_reduce_stocks);
+    }
+
+    $sql_delete_cart = <<<multi
+    DELETE
+    FROM
+        shopping_cart
+    WHERE
+        username = '$username'
+  multi;
+    $link->query($sql_delete_cart);
+
+    header("Location: checkout_successful.php");
+    exit();
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -231,16 +312,16 @@ if (isset($_POST["delete_cart_product"])) {
             <?php } ?>
             <tr class="table-info">
               <td colspan="6">
-                <span>運費：$60</span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] + 60 ?></h3>
+                <span>運費：$<?= $shipping ?></span>
+                <h3 id="total_amount">總金額：$<?= $sum_price[0] + $shipping ?></h3>
                 <label for="cars">選擇付費方式：</label>
                 <select name="paytype" form="checkout">
-                  <option value="volvo">ATM匯款</option>
-                  <option value="saab">線上刷卡</option>
-                  <option value="opel">貨到付款</option>
+                  <option value="ATM匯款">ATM匯款</option>
+                  <option value="線上刷卡">線上刷卡</option>
+                  <option value="貨到付款">貨到付款</option>
                 </select>
                 <form action="" method="post" id="checkout">
-                  <input class="btn btn-success" type="button" id="checkout_btn" name="checkout_btn" value="結帳">
+                  <input class="btn btn-success" type="submit" id="checkout_btn" name="checkout_btn" value="結帳">
                 </form>
                 <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
               </td>
