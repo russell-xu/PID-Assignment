@@ -19,16 +19,38 @@ if (isset($_POST["add_cart_input"])) {
   $purchase_quantity = $_POST["purchase_quantity"];
   $product_stocks = $_POST["product_stocks"];
 
+  $sql_cart_has_product = <<<multi
+    SELECT
+      quantity
+    FROM
+      shopping_cart
+    WHERE
+      username = '$username' AND product_id = '$product_id'
+  multi;
+  $cart_has_product = $link->query($sql_cart_has_product)->fetch_row();
+
   if ($purchase_quantity > 0) {
-    $sql_add_cart = <<<multi
-      INSERT INTO shopping_cart(
-          quantity,
-          username,
-          product_id
-      )
-      VALUES('$purchase_quantity', '$username', '$product_id');
-    multi;
-    $link->query($sql_add_cart);
+    if ($cart_has_product == null) {
+      $sql_add_cart = <<<multi
+        INSERT INTO shopping_cart(
+            quantity,
+            username,
+            product_id
+        )
+        VALUES('$purchase_quantity', '$username', '$product_id');
+      multi;
+      $link->query($sql_add_cart);
+    } else {
+      $sql_update_add_cart = <<<multi
+        UPDATE
+            shopping_cart
+        SET
+            quantity = '$cart_has_product[0]' + '$purchase_quantity'
+        WHERE
+            username = '$username' AND product_id = '$product_id'
+      multi;
+      $link->query($sql_update_add_cart);
+    }
   }
 }
 
@@ -208,44 +230,19 @@ $result = $link->query($sql_product_list);
     let add_cart = document.querySelectorAll('.add_cart')
     let update_purchase_quantity = document.querySelector('#update_purchase_quantity')
     let purchase_quantity = document.querySelectorAll('.purchase_quantity')
+    let cart_quantity = 0
     for (let i = 0; i < add_cart.length; i++) {
       add_cart[i].addEventListener("submit", () => {
-        update_purchase_quantity.innerHTML += purchase_quantity[i].value
-
-        console.log('ok');
+        if (update_purchase_quantity.innerHTML === '' && parseInt(purchase_quantity[i].value) === 0) {
+          return false
+        } else if (update_purchase_quantity.innerHTML === '' && parseInt(purchase_quantity[i].value) !== 0) {
+          update_purchase_quantity.innerHTML = cart_quantity + parseInt(purchase_quantity[i].value)
+        } else {
+          cart_quantity = parseInt(update_purchase_quantity.innerHTML)
+          update_purchase_quantity.innerHTML = cart_quantity + parseInt(purchase_quantity[i].value)
+        }
       })
     }
-
-
-
-
-    // let add_cart_form = document.querySelector('#add_cart')
-    // add_cart_form.addEventListener("submit", () => {
-    //   let userName = $('#username'),
-    //     passWord = $('#password'),
-    //     fileBtn = $('#file'),
-    //     btn = $('#btn');
-
-    //   btn.addEventListener('click', () => {
-    //     let fd = new FormData();
-    //     fd.append('userName', userName.value);
-    //     fd.append('passWord', passWord.value);
-    //     fd.append('file', fileBtn.files[0]);
-
-    //     fetch('http://localhost:4000/login', {
-    //       method: 'POST',
-    //       body: fd,
-    //     }).then(res => {
-    //       if (res.ok) {
-    //         return res.json();
-    //       } else {
-    //         console.log('error')
-    //       }
-    //     }).then(res => {
-    //       console.log('res is', res);
-    //     });
-    //   });
-    // })
   </script>
 </body>
 

@@ -53,21 +53,6 @@ function Update_purchase_quantity()
   return $quantity_row[0];
 }
 
-$sql_sum_price = <<<multi
-  SELECT
-      SUM(b.product_price)
-  FROM
-      shopping_cart AS a
-  INNER JOIN product_list AS b
-  ON
-      a.product_id = b.product_id
-  WHERE
-      a.username = 'karta'
-  multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
-
-$shipping = $sum_price[0] != null ? 60 : 0;
-
 if (isset($_POST["delete_cart_product"])) {
   global $result;
 
@@ -85,6 +70,22 @@ if (isset($_POST["delete_cart_product"])) {
   $result = grab_shopping_cart_information();
 }
 
+$username = $_SESSION["username"];
+
+$sql_sum_price = <<<multi
+  SELECT
+      SUM(a.quantity * b.product_price)
+  FROM
+      shopping_cart AS a
+  INNER JOIN product_list AS b
+  ON
+      a.product_id = b.product_id AND a.username = '$username'
+multi;
+$sum_price = $link->query($sql_sum_price)->fetch_row();
+
+$shipping = $sum_price[0] != null ? 60 : 0;
+
+$error_message = "";
 if (isset($_POST["checkout_btn"])) {
   if ($sum_price[0] != null) {
     global $result;
@@ -179,6 +180,8 @@ if (isset($_POST["checkout_btn"])) {
 
     header("Location: checkout_successful.php");
     exit();
+  } else {
+    $error_message = "購物車裡沒有物品喔！快去買吧！";
   }
 }
 ?>
@@ -232,6 +235,10 @@ if (isset($_POST["checkout_btn"])) {
 
     #total_amount {
       margin: 10px 0;
+    }
+
+    #error_message {
+      color: red;
     }
   </style>
 </head>
@@ -323,6 +330,7 @@ if (isset($_POST["checkout_btn"])) {
                 <form action="" method="post" id="checkout">
                   <input class="btn btn-success" type="submit" id="checkout_btn" name="checkout_btn" value="結帳">
                 </form>
+                <p id="error_message"><?= $error_message ?></p>
                 <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
               </td>
             </tr>

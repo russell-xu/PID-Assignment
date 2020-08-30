@@ -118,36 +118,6 @@ INSERT INTO shopping_cart(
     product_id
 )
 VALUES('5', 'karta', '2');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('1', 'karta', '3');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('5', 'karta', '2');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('5', 'admin', '2');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('1', 'admin', '3');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('5', 'admin', '2');
 DROP TABLE IF EXISTS
     orders;
 CREATE TABLE orders(
