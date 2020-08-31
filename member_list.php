@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
+if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: index.php");
   exit();
 }
@@ -11,60 +11,48 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-
 require_once("connectconfig.php");
 
-$username = $_SESSION["username"];
-$orders_id = $_SESSION["orders_id"];
-
-$sql_sum_price = <<<multi
-  SELECT
-      `total_price`
-  FROM
-      `orders`
-  WHERE
-      `orders_id` = '$orders_id'
-multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
-
-$shipping = $sum_price[0] != null ? 60 : 0;
-
-function query_order_detail()
-{
-  require("connectconfig.php");
-  $orders_id = $_SESSION["orders_id"];
-  $sql_product_cart = <<<multi
-    SELECT
-      a.quantity,
-      a.product_id,
-      b.product_name,
-      b.product_price,
-      b.product_images
-    FROM
-      order_detail AS a
-    INNER JOIN product_list AS b
-    ON
-      a.product_id = b.product_id AND a.orders_id = '$orders_id'
-  multi;
-  return $link->query($sql_product_cart);
-}
-$order_detail = query_order_detail();
-
-function Update_purchase_quantity()
-{
-  require("connectconfig.php");
-  $username = $_SESSION["username"];
-  $sql_quantity = <<<multi
-    SELECT
-        SUM(`quantity`)
-    FROM
-        shopping_cart
+if (isset($_POST["normal"])) {
+  $username = $_POST["username"];
+  $sql_member_status = <<<multi
+    UPDATE
+      member
+    SET
+      `status` = '正常'
     WHERE
-        username = '$username'
-    multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
+      `username` = '$username'
+  multi;
+  $link->query($sql_member_status);
 }
+
+if (isset($_POST["suspension"])) {
+  $username = $_POST["username"];
+  $sql_member_status = <<<multi
+    UPDATE
+      member
+    SET
+      `status` = '停權'
+    WHERE
+      `username` = '$username'
+  multi;
+  $link->query($sql_member_status);
+}
+
+function query_members()
+{
+  require("connectconfig.php");
+  $sql_member = <<<multi
+    SELECT
+      *
+    FROM
+      `member`
+  multi;
+  return $link->query($sql_member);
+}
+$query_members = query_members();
+
+$query_members_data = $query_members->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -126,7 +114,7 @@ function Update_purchase_quantity()
 
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="member_side.php">我是購物網站</a>
+    <a class="navbar-brand" href="#">我是購物網站</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -136,12 +124,16 @@ function Update_purchase_quantity()
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="client_query_order.php">查詢訂單</a>
+          <a class="nav-link" href="management_side.php">訂單管理</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="shopping_cart.php">購物車
-            <span class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
-          </a>
+          <a class="nav-link" href="#">會員列表</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="commodity_management.php">商品管理</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="report.php">報表</a>
         </li>
         <li class="nav-item nav_item_form">
           <form action="" method="post">
@@ -158,53 +150,54 @@ function Update_purchase_quantity()
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="5">
-                <p class="title">會員系統 － 查詢訂單細節 - 訂單編號：<?= $orders_id ?></p>
+              <td colspan="8">
+                <p class="title">管理系統 － 訂單管理</p>
               </td>
             </tr>
             <tr class="bg-success text-light">
               <td>
-                <p class="title">商品名字</p>
+                <p class="title">會員名稱</p>
               </td>
               <td>
-                <p class="title">商品圖片</p>
+                <p class="title">電子信箱</p>
               </td>
               <td>
-                <p class="title">單價</p>
+                <p class="title">手機號碼</p>
               </td>
               <td>
-                <p class="title">購買數量</p>
+                <p class="title">密碼</p>
               </td>
               <td>
-                <p class="title">總計</p>
+                <p class="title">狀態</p>
+              </td>
+              <td>
+                <p class="title">操作</p>
               </td>
             </tr>
           </thead>
           <tbody>
-            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
+            <?php while ($query_members_data = $query_members->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
-                <td class="align-middle">
-                  <img class="product_images" src="./img/<?= $order_detail_data['product_images'] ?>" alt="" srcset="">
+                <td class="align-middle"><?= $query_members_data['username'] ?></td>
+                <td class="align-middle"><?= $query_members_data['email'] ?>
                 </td>
-                <td class="align-middle">$<?= $order_detail_data['product_price'] ?></td>
-                <td class="align-middle"><?= $order_detail_data['quantity'] ?></td>
-                <td class="align-middle">$<?= $order_detail_data['quantity'] * $order_detail_data['product_price'] ?></td>
+                <td class="align-middle"><?= $query_members_data['cellphone'] ?></td>
+                <td class="align-middle"><?= $query_members_data['password'] ?></td>
+                <td class="align-middle"><?= $query_members_data['status'] ?></td>
+                <td class="align-middle">
+                  <form action="" method="post">
+                    <input type="hidden" name="username" value="<?= $query_members_data['username'] ?>">
+                    <input class="btn btn-outline-success" type="submit" name="normal" value="正常">
+                    <input class="btn btn-outline-danger" type="submit" name="suspension" value="停權">
+                  </form>
+                </td>
               </tr>
             <?php } ?>
-            <tr class="table-info">
-              <td colspan="5">
-                <span>運費：$<?= $shipping ?></span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
-                <a href="client_query_order.php" class="btn btn-warning" role="button">回查詢訂單頁面</a>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
-
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

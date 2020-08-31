@@ -1,8 +1,14 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-    header("Location: index.php");
-    exit();
+  header("Location: index.php");
+  exit();
+}
+
+if (isset($_POST["btnSignOut"])) {
+  $_SESSION["username"] = "Guest";
+  header("Location: index.php");
+  exit();
 }
 
 $id = $_SESSION["id"];

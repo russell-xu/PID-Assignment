@@ -5,6 +5,12 @@ if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   exit();
 }
 
+if (isset($_POST["btnSignOut"])) {
+  $_SESSION["username"] = "Guest";
+  header("Location: index.php");
+  exit();
+}
+
 
 require_once("connectconfig.php");
 

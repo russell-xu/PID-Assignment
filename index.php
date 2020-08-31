@@ -11,7 +11,7 @@ if (isset($_POST["btnOK"])) {
   $sql_username = "SELECT * FROM member WHERE username = '$username'";
   $username_row = $link->query($sql_username)->fetch_row();
 
-  if ($username_row !== null && $username != "" && $password != "" && $username_row[0] == $username && $username_row[4] == $password) {
+  if ($username_row !== null && $username != "" && $password != "" && $username_row[0] == $username && $username_row[4] == $password && $username_row[5] == '正常') {
     $_SESSION["username"] = $username;
     if ($_SESSION["username"] == "admin") {
       header("Location: management_side.php");

@@ -10,6 +10,7 @@ CREATE TABLE member(
     `cellphone` VARCHAR(10) NOT NULL,
     `address` VARCHAR(255) NOT NULL,
     `password` VARCHAR(20) NOT NULL,
+    `status` ENUM('正常', '停權') NOT NULL DEFAULT '正常',
     PRIMARY KEY(username)
 ); INSERT INTO member(
     username,
@@ -136,19 +137,11 @@ DROP TABLE IF EXISTS
     orders;
 CREATE TABLE orders(
     `orders_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-    `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(), 
-    `total_price` INT(11) UNSIGNED, 
-    `paytype` ENUM('ATM匯款', '線上刷卡', '貨到付款') NOT NULL, 
-    `username` VARCHAR(20) NOT NULL, 
-    `status` ENUM('處理中', '已完成', '已取消') NOT NULL DEFAULT '處理中', 
-    PRIMARY KEY(orders_id), 
-    FOREIGN KEY(username) REFERENCES member(username)
-); 
-INSERT INTO orders(
-    total_price,
-    paytype,
-    username
-)
+    `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(), `total_price` INT(11) UNSIGNED, `paytype` ENUM('ATM匯款', '線上刷卡', '貨到付款') NOT NULL, `username` VARCHAR(20) NOT NULL, `status` ENUM('處理中', '已完成', '已取消') NOT NULL DEFAULT '處理中', PRIMARY KEY(orders_id), FOREIGN KEY(username) REFERENCES member(username)); INSERT INTO orders(
+        total_price,
+        paytype,
+        username
+    )
 VALUES('1234560', '貨到付款', 'karta');
 INSERT INTO orders(
     total_price,

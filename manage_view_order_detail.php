@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
+if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: index.php");
   exit();
 }
@@ -126,7 +126,7 @@ function Update_purchase_quantity()
 
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="member_side.php">我是購物網站</a>
+    <a class="navbar-brand" href="#">我是購物網站</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -136,12 +136,16 @@ function Update_purchase_quantity()
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="client_query_order.php">查詢訂單</a>
+          <a class="nav-link" href="#">訂單管理</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="shopping_cart.php">購物車
-            <span class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
-          </a>
+          <a class="nav-link" href="member_list.php">會員列表</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="commodity_management.php">商品管理</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="report.php">報表</a>
         </li>
         <li class="nav-item nav_item_form">
           <form action="" method="post">
@@ -159,7 +163,7 @@ function Update_purchase_quantity()
           <thead>
             <tr class="bg-primary text-light">
               <td colspan="5">
-                <p class="title">會員系統 － 查詢訂單細節 - 訂單編號：<?= $orders_id ?></p>
+                <p class="title">管理系統 － 查詢訂單細節 - 訂單編號：<?= $orders_id ?></p>
               </td>
             </tr>
             <tr class="bg-success text-light">
@@ -196,7 +200,7 @@ function Update_purchase_quantity()
               <td colspan="5">
                 <span>運費：$<?= $shipping ?></span>
                 <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
-                <a href="client_query_order.php" class="btn btn-warning" role="button">回查詢訂單頁面</a>
+                <a href="management_side.php" class="btn btn-warning" role="button">回訂單管理頁面</a>
               </td>
             </tr>
           </tbody>
