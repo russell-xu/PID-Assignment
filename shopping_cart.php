@@ -14,7 +14,6 @@ function grab_shopping_cart_information()
   $sql_product_cart = <<<multi
     SELECT
       a.quantity,
-      a.username,
       a.product_id,
       b.product_name,
       b.product_price,
@@ -280,6 +279,9 @@ if (isset($_POST["checkout_btn"])) {
       <ul class="navbar-nav ml-auto">
         <li class="nav-item active">
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="client_query_order.php">查詢訂單</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="shopping_cart.php">購物車

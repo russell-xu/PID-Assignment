@@ -5,7 +5,27 @@ if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   exit();
 }
 
+
 require_once("connectconfig.php");
+
+function query_orders()
+{
+  require("connectconfig.php");
+  $username = $_SESSION["username"];
+  $sql_product_cart = <<<multi
+    SELECT
+      *
+    FROM
+      `orders`
+    WHERE
+      `username` = '$username'
+    ORDER BY
+      `orders_id`
+    DESC
+  multi;
+  return $link->query($sql_product_cart);
+}
+$query_orders = query_orders();
 
 function Update_purchase_quantity()
 {
@@ -23,6 +43,11 @@ function Update_purchase_quantity()
   return $quantity_row[0];
 }
 
+if (isset($_POST["view_order_details"])) {
+  $_SESSION["orders_id"] = $_POST["orders_id"];
+  header("Location: client_view_order_detail.php");
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -51,8 +76,33 @@ function Update_purchase_quantity()
       align-items: center;
     }
 
-    #title {
-      margin: 30px 0;
+    .title {
+      margin: 0;
+    }
+
+    .table td {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .product_images {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    #checkout_btn {
+      font-size: 30px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    #total_amount {
+      margin: 10px 0;
+    }
+
+    #error_message {
+      color: red;
     }
   </style>
 </head>
@@ -88,8 +138,53 @@ function Update_purchase_quantity()
   <div class="container">
     <div class="row">
       <div class="col">
-        <h1 id="title">結帳成功！</h1>
-        <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
+        <table class="table table-bordered">
+          <thead>
+            <tr class="bg-primary text-light">
+              <td colspan="6">
+                <p class="title">會員系統 － 查詢訂單</p>
+              </td>
+            </tr>
+            <tr class="bg-success text-light">
+              <td>
+                <p class="title">訂單編號</p>
+              </td>
+              <td>
+                <p class="title">訂單時間</p>
+              </td>
+              <td>
+                <p class="title">總金額</p>
+              </td>
+              <td>
+                <p class="title">付款方式</p>
+              </td>
+              <td>
+                <p class="title">訂單狀態</p>
+              </td>
+              <td>
+                <p class="title">操作</p>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
+              <tr class="text-center">
+                <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['date'] ?>
+                </td>
+                <td class="align-middle">$<?= $query_orders_data['total_price'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['paytype'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['status'] ?></td>
+                <td class="align-middle">
+                  <form action="" method="post">
+                    <input type="hidden" name="orders_id" value="<?= $query_orders_data['orders_id'] ?>">
+                    <input class="btn btn-outline-info" type="submit" name="view_order_details" value="查看訂單細節">
+                  </form>
+                </td>
+              </tr>
+            <?php } ?>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

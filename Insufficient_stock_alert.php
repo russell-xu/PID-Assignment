@@ -69,6 +69,9 @@ function Update_purchase_quantity()
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="client_query_order.php">查詢訂單</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="shopping_cart.php">購物車
             <span class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
           </a>
