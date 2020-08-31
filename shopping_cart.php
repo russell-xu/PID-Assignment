@@ -13,29 +13,22 @@ function grab_shopping_cart_information()
   $username = $_SESSION["username"];
   $sql_product_cart = <<<multi
     SELECT
-        SUM(a.quantity),
-        a.username,
-        a.product_id,
-        b.product_name,
-        b.product_price,
-        b.product_images
+      a.quantity,
+      a.username,
+      a.product_id,
+      b.product_name,
+      b.product_price,
+      b.product_stocks,
+      b.product_images
     FROM
-        shopping_cart AS a
+      shopping_cart AS a
     INNER JOIN product_list AS b
     ON
-        a.product_id = b.product_id
-    WHERE
-        a.username = '$username'
-    GROUP BY
-        a.username,
-        a.product_id,
-        b.product_name,
-        b.product_price,
-        b.product_images
+      a.product_id = b.product_id AND a.username = '$username'
     multi;
   return $link->query($sql_product_cart);
 }
-$result = grab_shopping_cart_information();
+$shopping_cart_data = grab_shopping_cart_information();
 
 function Update_purchase_quantity()
 {
@@ -54,7 +47,7 @@ function Update_purchase_quantity()
 }
 
 if (isset($_POST["delete_cart_product"])) {
-  global $result;
+  global $shopping_cart_data;
 
   $username = $_SESSION["username"];
   $product_id = $_POST["product_id"];
@@ -67,7 +60,7 @@ if (isset($_POST["delete_cart_product"])) {
       username = '$username' AND product_id = '$product_id'
   multi;
   $link->query($sql_delete_cart_product);
-  $result = grab_shopping_cart_information();
+  $shopping_cart_data = grab_shopping_cart_information();
 }
 
 $username = $_SESSION["username"];
@@ -86,102 +79,136 @@ $sum_price = $link->query($sql_sum_price)->fetch_row();
 $shipping = $sum_price[0] != null ? 60 : 0;
 
 $error_message = "";
-if (isset($_POST["checkout_btn"])) {
-  if ($sum_price[0] != null) {
-    global $result;
-    global $sum_price;
 
-    $username = $_SESSION["username"];
-    $paytype = $_POST["paytype"];
-
-    $sql_add_order = <<<multi
-    INSERT INTO orders(
-        total_price,
-        paytype,
-        username
-    )
-    VALUES(
-        {$sum_price[0]} + 60,
-        '$paytype',
-        '$username'
-    );
-  multi;
-    $link->query($sql_add_order);
-
-    $sql_order_id = <<<multi
+function check_stock_sufficient()
+{
+  require("connectconfig.php");
+  $username = $_SESSION["username"];
+  $sql_product_cart = <<<multi
     SELECT
-      orders_id
+      a.quantity,
+      b.product_stocks
     FROM
-      `orders`
-    ORDER BY
-      orders_id
-    DESC
-    LIMIT 0, 1
-  multi;
-    $order_id_row = $link->query($sql_order_id)->fetch_row();
-
-    while ($row = $result->fetch_assoc()) {
-      $sql_checkout = <<<multi
-      INSERT INTO order_detail(
-          orders_id,
-          product_id,
-          quantity
-      )
-      VALUES(
-          '{$order_id_row[0]}',
-          '{$row['product_id']}',
-          '{$row['SUM(a.quantity)']}'
-      );
+      shopping_cart AS a
+    INNER JOIN product_list AS b
+    ON
+      a.product_id = b.product_id AND a.username = '$username'
     multi;
-      $link->query($sql_checkout);
-
-      // reduce_stocks
-      $sql_product_stocks = <<<multi
-      SELECT
-        product_stocks
-      FROM
-        product_list
-      WHERE
-        product_id = '{$row['product_id']}'
-    multi;
-      $product_stocks_row = $link->query($sql_product_stocks)->fetch_row();
-
-      $sql_quantity = <<<multi
-      SELECT
-        SUM(quantity)
-      FROM
-        shopping_cart
-      WHERE
-        username = '$username' AND product_id = '{$row['product_id']}'
-    multi;
-      $quantity_row = $link->query($sql_quantity)->fetch_row();
-
-      $reduced_quantity = $product_stocks_row[0] - $quantity_row[0];
-
-      $sql_reduce_stocks = <<<multi
-      UPDATE
-        product_list
-      SET
-        `product_stocks` = '$reduced_quantity'
-      WHERE
-        `product_id` = '{$row['product_id']}'
-    multi;
-      $link->query($sql_reduce_stocks);
+  $product_stocks_data = $link->query($sql_product_cart);
+  while ($stocks_data = $product_stocks_data->fetch_assoc()) {
+    if ($stocks_data['product_stocks'] < $stocks_data['quantity']) {
+      return false;
     }
+  }
+  return true;
+}
 
-    $sql_delete_cart = <<<multi
-    DELETE
-    FROM
-        shopping_cart
-    WHERE
-        username = '$username'
-  multi;
-    $link->query($sql_delete_cart);
+if (isset($_POST["checkout_btn"])) {
+  if (check_stock_sufficient()) {
+    if ($sum_price[0] != null) {
 
-    header("Location: checkout_successful.php");
-    exit();
+      global $shopping_cart_data;
+      global $sum_price;
+
+      $username = $_SESSION["username"];
+      $paytype = $_POST["paytype"];
+
+      $sql_add_order = <<<multi
+        INSERT INTO orders(
+            total_price,
+            paytype,
+            username
+        )
+        VALUES(
+            {$sum_price[0]} + 60,
+            '$paytype',
+            '$username'
+        );
+      multi;
+      $link->query($sql_add_order);
+
+      $sql_order_id = <<<multi
+        SELECT
+          orders_id
+        FROM
+          `orders`
+        ORDER BY
+          orders_id
+        DESC
+        LIMIT 0, 1
+      multi;
+      $order_id_row = $link->query($sql_order_id)->fetch_row();
+
+      // $cart_data = $shopping_cart_data->fetch_assoc();
+      // var_dump($shopping_cart_data);
+      // exit();
+
+      while ($cart_data = $shopping_cart_data->fetch_assoc()) {
+        $sql_checkout = <<<multi
+          INSERT INTO order_detail(
+              orders_id,
+              product_id,
+              quantity
+          )
+          VALUES(
+              '{$order_id_row[0]}',
+              '{$cart_data['product_id']}',
+              '{$cart_data['quantity']}'
+          );
+        multi;
+        $link->query($sql_checkout);
+
+        // reduce_stocks
+        $sql_product_stocks = <<<multi
+          SELECT
+            product_stocks
+          FROM
+            product_list
+          WHERE
+            product_id = '{$cart_data['product_id']}'
+        multi;
+        $product_stocks_row = $link->query($sql_product_stocks)->fetch_row();
+
+        $sql_quantity = <<<multi
+          SELECT
+            SUM(quantity)
+          FROM
+            shopping_cart
+          WHERE
+            username = '$username' AND product_id = '{$cart_data['product_id']}'
+        multi;
+        $quantity_row = $link->query($sql_quantity)->fetch_row();
+
+        $reduced_quantity = $product_stocks_row[0] - $quantity_row[0];
+
+        $sql_reduce_stocks = <<<multi
+          UPDATE
+            product_list
+          SET
+            `product_stocks` = '$reduced_quantity'
+          WHERE
+            `product_id` = '{$cart_data['product_id']}'
+        multi;
+        $link->query($sql_reduce_stocks);
+      }
+
+      $sql_delete_cart = <<<multi
+        DELETE
+        FROM
+            shopping_cart
+        WHERE
+            username = '$username'
+      multi;
+      $link->query($sql_delete_cart);
+
+      header("Location: checkout_successful.php");
+      exit();
+    } else {
+      $error_message = "購物車裡沒有物品喔！快去買吧！";
+    }
   } else {
-    $error_message = "購物車裡沒有物品喔！快去買吧！";
+    header("Location: Insufficient_stock_alert.php");
+    exit();
   }
 }
 ?>
@@ -274,7 +301,7 @@ if (isset($_POST["checkout_btn"])) {
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="6">
+              <td colspan="7">
                 <p class="title">會員系統 － 購物車</p>
               </td>
             </tr>
@@ -286,10 +313,13 @@ if (isset($_POST["checkout_btn"])) {
                 <p class="title">商品圖片</p>
               </td>
               <td>
+                <p class="title">庫存</p>
+              </td>
+              <td>
                 <p class="title">單價</p>
               </td>
               <td>
-                <p class="title">數量</p>
+                <p class="title">購買數量</p>
               </td>
               <td>
                 <p class="title">總計</p>
@@ -300,25 +330,26 @@ if (isset($_POST["checkout_btn"])) {
             </tr>
           </thead>
           <tbody>
-            <?php while ($row = $result->fetch_assoc()) { ?>
+            <?php while ($cart_data = $shopping_cart_data->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $row['product_name'] ?></td>
+                <td class="align-middle"><?= $cart_data['product_name'] ?></td>
                 <td class="align-middle">
-                  <img class="product_images" src="./img/<?= $row['product_images'] ?>" alt="" srcset="">
+                  <img class="product_images" src="./img/<?= $cart_data['product_images'] ?>" alt="" srcset="">
                 </td>
-                <td class="align-middle">$<?= $row['product_price'] ?></td>
-                <td class="align-middle"><?= $row['SUM(a.quantity)'] ?></td>
-                <td class="align-middle">$<?= $row['SUM(a.quantity)'] * $row['product_price'] ?></td>
+                <td class="align-middle"><?= $cart_data['product_stocks'] ?></td>
+                <td class="align-middle">$<?= $cart_data['product_price'] ?></td>
+                <td class="align-middle"><?= $cart_data['quantity'] ?></td>
+                <td class="align-middle">$<?= $cart_data['quantity'] * $cart_data['product_price'] ?></td>
                 <td class="align-middle">
                   <form action="" method="post">
-                    <input type="hidden" name="product_id" value="<?= $row['product_id'] ?>">
+                    <input type="hidden" name="product_id" value="<?= $cart_data['product_id'] ?>">
                     <input class="btn btn-outline-danger" type="submit" name="delete_cart_product" value="刪除">
                   </form>
                 </td>
               </tr>
             <?php } ?>
             <tr class="table-info">
-              <td colspan="6">
+              <td colspan="7">
                 <span>運費：$<?= $shipping ?></span>
                 <h3 id="total_amount">總金額：$<?= $sum_price[0] + $shipping ?></h3>
                 <label for="cars">選擇付費方式：</label>
