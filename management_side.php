@@ -41,6 +41,7 @@ if (isset($_POST["cancel_order"])) {
 
 if (isset($_POST["view_order_details"])) {
   $_SESSION["orders_id"] = $_POST["orders_id"];
+  $_SESSION["member_name"] = $_POST["member_name"];
   header("Location: manage_view_order_detail.php");
   exit();
 }
@@ -194,6 +195,7 @@ $query_orders = query_orders();
                 <td class="align-middle">
                   <form action="" method="post">
                     <input type="hidden" name="orders_id" value="<?= $query_orders_data['orders_id'] ?>">
+                    <input type="hidden" name="member_name" value="<?= $query_orders_data['username'] ?>">
                     <input class="btn btn-outline-success" type="submit" name="complete_order" value="完成訂單">
                     <input class="btn btn-outline-danger" type="submit" name="cancel_order" value="取消訂單">
                     <input class="btn btn-outline-info" type="submit" name="view_order_details" value="查看訂單細節">

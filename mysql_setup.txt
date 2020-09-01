@@ -113,8 +113,7 @@ CREATE TABLE shopping_cart(
     `quantity` INT(11) UNSIGNED,
     `username` VARCHAR(20) NOT NULL,
     `product_id` INT(11) UNSIGNED NOT NULL,
-    FOREIGN KEY(username) REFERENCES member(username),
-    FOREIGN KEY(product_id) REFERENCES product_list(product_id)
+    FOREIGN KEY(username) REFERENCES member(username)
 ); INSERT INTO shopping_cart(
     quantity,
     username,
@@ -142,84 +141,144 @@ CREATE TABLE orders(
         paytype,
         username
     )
-VALUES('1234560', '貨到付款', 'karta');
+VALUES('500060', '貨到付款', 'karta');
 INSERT INTO orders(
     total_price,
     paytype,
     username
 )
-VALUES('55560', '線上刷卡', 'throuz');
+VALUES('1163660', '線上刷卡', 'throuz');
 INSERT INTO orders(
     total_price,
     paytype,
     username
 )
-VALUES('95950', '貨到付款', 'throuz');
+VALUES('1501560', '貨到付款', 'throuz');
 INSERT INTO orders(
     total_price,
     paytype,
     username
 )
-VALUES('666480', '線上刷卡', 'karta');
+VALUES('400060', '線上刷卡', 'karta');
 DROP TABLE IF EXISTS
     order_detail;
 CREATE TABLE order_detail(
     `orders_id` INT(11) UNSIGNED NOT NULL,
     `product_id` INT(11) UNSIGNED NOT NULL,
     `quantity` INT(11) UNSIGNED,
-    FOREIGN KEY(orders_id) REFERENCES orders(orders_id),
-    FOREIGN KEY(product_id) REFERENCES product_list(product_id)
+    `product_name` VARCHAR(20) NOT NULL,
+    `product_price` INT(11) NOT NULL,
+    `product_images` VARCHAR(20) NOT NULL,
+    FOREIGN KEY(orders_id) REFERENCES orders(orders_id)
 ); INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('1', '1', '1');
+VALUES(
+    '1',
+    '1',
+    '1',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+);
 INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('1', '2', '1');
+VALUES(
+    '2',
+    '1',
+    '2',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+);
 INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('1', '3', '1');
+VALUES(
+    '2',
+    '2',
+    '4',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+);
 INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('2', '1', '1');
+VALUES(
+    '2',
+    '3',
+    '12',
+    'Cheap Food',
+    '300',
+    'food.png'
+);
 INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('2', '2', '3');
+VALUES(
+    '3',
+    '1',
+    '3',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+);
 INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('3', '3', '2');
+VALUES(
+    '3',
+    '3',
+    '5',
+    'Cheap Food',
+    '300',
+    'food.png'
+);
 INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
+    `orders_id`,
+    `product_id`,
+    `quantity`,
+    `product_name`,
+    `product_price`,
+    `product_images`
 )
-VALUES('4', '1', '2');
-INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
-)
-VALUES('4', '2', '3');
-INSERT INTO order_detail(
-    orders_id,
-    product_id,
-    quantity
-)
-VALUES('4', '3', '10');
+VALUES(
+    '4',
+    '2',
+    '10',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+);

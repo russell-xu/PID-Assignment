@@ -13,36 +13,47 @@ if (isset($_POST["btnSignOut"])) {
 
 require_once("connectconfig.php");
 
-if (isset($_POST["modify"])) {
-  $_SESSION["product_id"] = $_POST["product_id"];
-  header("Location: manage_modify_product.php");
+if (isset($_POST["submit_modify"])) {
+  $product_id = $_SESSION["product_id"];
+  $product_name = $_POST["product_name"];
+  $product_price = $_POST["product_price"];
+  $product_stocks = $_POST["product_stocks"];
+  $product_images = $_POST["product_images"];
+  $product_description = $_POST["product_description"];
+
+  $sql_update_product = <<<multi
+    UPDATE
+      product_list
+    SET
+      `product_name` = '$product_name',
+      `product_price` = '$product_price',
+      `product_stocks` = '$product_stocks',
+      `product_images` = '$product_images',
+      `product_description` = '$product_description'
+    WHERE
+      `product_id` = '$product_id'
+  multi;
+  $link->query($sql_update_product);
+  header("Location: commodity_management.php");
   exit();
 }
 
-if (isset($_POST["delete"])) {
-  $product_id = $_POST["product_id"];
-  $sql_product = <<<multi
-    DELETE
-    FROM
-        product_list
-    WHERE
-        `product_id` = '$product_id'
-  multi;
-  $link->query($sql_product);
-}
-
-function query_products()
+function query_product()
 {
+  $product_id = $_SESSION["product_id"];
   require("connectconfig.php");
   $sql_product = <<<multi
     SELECT
       *
     FROM
       `product_list`
+    WHERE
+      `product_id` = '$product_id'
   multi;
   return $link->query($sql_product);
 }
-$query_products = query_products();
+$query_product = query_product();
+$product = $query_product->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -71,43 +82,20 @@ $query_products = query_products();
       align-items: center;
     }
 
-    .title {
-      margin: 0;
-    }
-
-    .table td {
-      text-align: center;
-      padding: 20px;
-    }
-
-    .product_images {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    #checkout_btn {
-      font-size: 30px;
-      margin-top: 10px;
+    #title {
       margin-bottom: 20px;
     }
 
-    #total_amount {
-      margin: 10px 0;
-    }
-
-    #error_message {
-      color: red;
+    .container {
+      padding: 30px;
     }
 
     #product_description {
-      width: 25vw;
+      resize: none;
     }
 
-    .product_image {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
+    .btn {
+      font-size: 20px;
     }
   </style>
 </head>
@@ -147,59 +135,36 @@ $query_products = query_products();
   <div class="container">
     <div class="row">
       <div class="col">
-        <table class="table table-bordered">
-          <thead>
-            <tr class="bg-primary text-light">
-              <td colspan="5">
-                <p class="title">管理系統 － 商品管理</p>
-              </td>
-              <td>
-                <a href="add_product.php" class="btn btn-warning">新增商品</a>
-              </td>
-            </tr>
-            <tr class="bg-success text-light">
-              <td>
-                <p class="title">商品名稱</p>
-              </td>
-              <td>
-                <p class="title">單價</p>
-              </td>
-              <td>
-                <p class="title">庫存</p>
-              </td>
-              <td>
-                <p class="title">商品圖片</p>
-              </td>
-              <td>
-                <p class="title">商品描述</p>
-              </td>
-              <td>
-                <p class="title">操作</p>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <?php while ($query_products_data = $query_products->fetch_assoc()) { ?>
-              <tr class="text-center">
-                <td class="align-middle"><?= $query_products_data['product_name'] ?></td>
-                <td class="align-middle">$<?= $query_products_data['product_price'] ?>
-                </td>
-                <td class="align-middle"><?= $query_products_data['product_stocks'] ?></td>
-                <td class="align-middle">
-                  <img class="product_image" src="./img/<?= $query_products_data['product_images'] ?>" alt="">
-                </td>
-                <td id="product_description" class="align-middle"><?= $query_products_data['product_description'] ?></td>
-                <td class="align-middle">
-                  <form action="" method="post">
-                    <input type="hidden" name="product_id" value="<?= $query_products_data['product_id'] ?>">
-                    <input class="btn btn-outline-info" type="submit" name="modify" value="修改">
-                    <input class="btn btn-outline-danger" type="submit" name="delete" value="刪除">
-                  </form>
-                </td>
-              </tr>
-            <?php } ?>
-          </tbody>
-        </table>
+        <h1 id="title">修改商品</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <form method="POST">
+          <div class="form-group">
+            <label for="product_name">商品名稱</label>
+            <input type="text" class="form-control" id="product_name" aria-describedby="emailHelp" name="product_name" value="<?= $product['product_name'] ?>">
+            <small id="emailHelp" class="form-text text-muted">error message</small>
+          </div>
+          <div class="form-group">
+            <label for="product_price">單價</label>
+            <input type="number" class="form-control" id="product_price" min="1" max="9999999999" name="product_price" value="<?= $product['product_price'] ?>">
+          </div>
+          <div class="form-group">
+            <label for="product_stocks">庫存</label>
+            <input type="number" class="form-control" id="product_stocks" min="0" max="9999999999" name="product_stocks" value="<?= $product['product_stocks'] ?>">
+          </div>
+          <div class="form-group">
+            <label for="product_image">商品圖片</label>
+            <input type="file" class="form-control-file" id="product_image" name="product_images" value="./img/<?= $product['product_images'] ?>">
+          </div>
+          <div class="form-group">
+            <label for="product_description">商品描述</label>
+            <textarea class="form-control" id="product_description" rows="6" name="product_description"><?= $product['product_description'] ?></textarea>
+          </div>
+          <a href="commodity_management.php" class="btn btn-danger">取消</a>
+          <input type="submit" class="btn btn-primary" name="submit_modify" value="送出修改">
+        </form>
       </div>
     </div>
   </div>

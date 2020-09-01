@@ -14,29 +14,35 @@ if (isset($_POST["btnSignOut"])) {
 require_once("connectconfig.php");
 
 if (isset($_POST["normal"])) {
-  $username = $_POST["username"];
+  $member_name = $_POST["member_name"];
   $sql_member_status = <<<multi
     UPDATE
       member
     SET
       `status` = '正常'
     WHERE
-      `username` = '$username'
+      `username` = '$member_name'
   multi;
   $link->query($sql_member_status);
 }
 
 if (isset($_POST["suspension"])) {
-  $username = $_POST["username"];
+  $member_name = $_POST["member_name"];
   $sql_member_status = <<<multi
     UPDATE
       member
     SET
       `status` = '停權'
     WHERE
-      `username` = '$username'
+      `username` = '$member_name'
   multi;
   $link->query($sql_member_status);
+}
+
+if (isset($_POST["view_order_history"])) {
+  $_SESSION["member_name"] = $_POST["member_name"];
+  header("Location: manage_member_order.php");
+  exit();
 }
 
 function query_members()
@@ -151,7 +157,7 @@ $query_members_data = $query_members->fetch_assoc();
           <thead>
             <tr class="bg-primary text-light">
               <td colspan="8">
-                <p class="title">管理系統 － 訂單管理</p>
+                <p class="title">管理系統 － 會員列表</p>
               </td>
             </tr>
             <tr class="bg-success text-light">
@@ -186,9 +192,10 @@ $query_members_data = $query_members->fetch_assoc();
                 <td class="align-middle"><?= $query_members_data['status'] ?></td>
                 <td class="align-middle">
                   <form action="" method="post">
-                    <input type="hidden" name="username" value="<?= $query_members_data['username'] ?>">
+                    <input type="hidden" name="member_name" value="<?= $query_members_data['username'] ?>">
                     <input class="btn btn-outline-success" type="submit" name="normal" value="正常">
                     <input class="btn btn-outline-danger" type="submit" name="suspension" value="停權">
+                    <input class="btn btn-outline-info" type="submit" name="view_order_history" value="查看歷史訂單">
                   </form>
                 </td>
               </tr>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
+if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: index.php");
   exit();
 }
@@ -11,38 +11,33 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
+
 require_once("connectconfig.php");
 
-if (isset($_POST["modify"])) {
-  $_SESSION["product_id"] = $_POST["product_id"];
-  header("Location: manage_modify_product.php");
-  exit();
-}
-
-if (isset($_POST["delete"])) {
-  $product_id = $_POST["product_id"];
-  $sql_product = <<<multi
-    DELETE
-    FROM
-        product_list
-    WHERE
-        `product_id` = '$product_id'
-  multi;
-  $link->query($sql_product);
-}
-
-function query_products()
+function query_orders()
 {
   require("connectconfig.php");
-  $sql_product = <<<multi
+  $member_name = $_SESSION["member_name"];
+  $sql_product_cart = <<<multi
     SELECT
       *
     FROM
-      `product_list`
+      `orders`
+    WHERE
+      `username` = '$member_name'
+    ORDER BY
+      `orders_id`
+    DESC
   multi;
-  return $link->query($sql_product);
+  return $link->query($sql_product_cart);
 }
-$query_products = query_products();
+$query_orders = query_orders();
+
+if (isset($_POST["view_order_details"])) {
+  $_SESSION["orders_id"] = $_POST["orders_id"];
+  header("Location: manage_view_order_detail.php");
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -78,36 +73,6 @@ $query_products = query_products();
     .table td {
       text-align: center;
       padding: 20px;
-    }
-
-    .product_images {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    #checkout_btn {
-      font-size: 30px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-    }
-
-    #total_amount {
-      margin: 10px 0;
-    }
-
-    #error_message {
-      color: red;
-    }
-
-    #product_description {
-      width: 25vw;
-    }
-
-    .product_image {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
     }
   </style>
 </head>
@@ -150,28 +115,25 @@ $query_products = query_products();
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="5">
-                <p class="title">管理系統 － 商品管理</p>
-              </td>
-              <td>
-                <a href="add_product.php" class="btn btn-warning">新增商品</a>
+              <td colspan="6">
+                <p class="title">管理系統 － 查詢歷史訂單 － 會員：<?= $_SESSION["member_name"] ?></p>
               </td>
             </tr>
             <tr class="bg-success text-light">
               <td>
-                <p class="title">商品名稱</p>
+                <p class="title">訂單編號</p>
               </td>
               <td>
-                <p class="title">單價</p>
+                <p class="title">訂單時間</p>
               </td>
               <td>
-                <p class="title">庫存</p>
+                <p class="title">總金額</p>
               </td>
               <td>
-                <p class="title">商品圖片</p>
+                <p class="title">付款方式</p>
               </td>
               <td>
-                <p class="title">商品描述</p>
+                <p class="title">訂單狀態</p>
               </td>
               <td>
                 <p class="title">操作</p>
@@ -179,21 +141,18 @@ $query_products = query_products();
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_products_data = $query_products->fetch_assoc()) { ?>
+            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $query_products_data['product_name'] ?></td>
-                <td class="align-middle">$<?= $query_products_data['product_price'] ?>
+                <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['date'] ?>
                 </td>
-                <td class="align-middle"><?= $query_products_data['product_stocks'] ?></td>
-                <td class="align-middle">
-                  <img class="product_image" src="./img/<?= $query_products_data['product_images'] ?>" alt="">
-                </td>
-                <td id="product_description" class="align-middle"><?= $query_products_data['product_description'] ?></td>
+                <td class="align-middle">$<?= $query_orders_data['total_price'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['paytype'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['status'] ?></td>
                 <td class="align-middle">
                   <form action="" method="post">
-                    <input type="hidden" name="product_id" value="<?= $query_products_data['product_id'] ?>">
-                    <input class="btn btn-outline-info" type="submit" name="modify" value="修改">
-                    <input class="btn btn-outline-danger" type="submit" name="delete" value="刪除">
+                    <input type="hidden" name="orders_id" value="<?= $query_orders_data['orders_id'] ?>">
+                    <input class="btn btn-outline-info" type="submit" name="view_order_details" value="查看訂單細節">
                   </form>
                 </td>
               </tr>
@@ -203,6 +162,7 @@ $query_products = query_products();
       </div>
     </div>
   </div>
+
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

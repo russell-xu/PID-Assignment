@@ -144,21 +144,23 @@ if (isset($_POST["checkout_btn"])) {
       multi;
       $order_id_row = $link->query($sql_order_id)->fetch_row();
 
-      // $cart_data = $shopping_cart_data->fetch_assoc();
-      // var_dump($shopping_cart_data);
-      // exit();
-
       while ($cart_data = $shopping_cart_data->fetch_assoc()) {
         $sql_checkout = <<<multi
           INSERT INTO order_detail(
-              orders_id,
-              product_id,
-              quantity
+              `orders_id`,
+              `product_id`,
+              `quantity`,
+              `product_name`,
+              `product_price`,
+              `product_images`
           )
           VALUES(
               '{$order_id_row[0]}',
               '{$cart_data['product_id']}',
-              '{$cart_data['quantity']}'
+              '{$cart_data['quantity']}',
+              '{$cart_data['product_name']}',
+              '{$cart_data['product_price']}',
+              '{$cart_data['product_images']}'
           );
         multi;
         $link->query($sql_checkout);

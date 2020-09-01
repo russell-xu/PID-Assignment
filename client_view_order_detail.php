@@ -35,16 +35,11 @@ function query_order_detail()
   $orders_id = $_SESSION["orders_id"];
   $sql_product_cart = <<<multi
     SELECT
-      a.quantity,
-      a.product_id,
-      b.product_name,
-      b.product_price,
-      b.product_images
+      *
     FROM
-      order_detail AS a
-    INNER JOIN product_list AS b
-    ON
-      a.product_id = b.product_id AND a.orders_id = '$orders_id'
+      `order_detail`
+    WHERE
+      `orders_id` = $orders_id
   multi;
   return $link->query($sql_product_cart);
 }

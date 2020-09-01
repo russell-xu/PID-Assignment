@@ -90,26 +90,6 @@ if (isset($_POST["view_order_details"])) {
       text-align: center;
       padding: 20px;
     }
-
-    .product_images {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    #checkout_btn {
-      font-size: 30px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-    }
-
-    #total_amount {
-      margin: 10px 0;
-    }
-
-    #error_message {
-      color: red;
-    }
   </style>
 </head>
 

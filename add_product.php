@@ -11,39 +11,36 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-
 require_once("connectconfig.php");
 
-$member_name = $_SESSION["member_name"];
-$orders_id = $_SESSION["orders_id"];
+if (isset($_POST["add_product"])) {
+  $product_name = $_POST["product_name"];
+  $product_price = $_POST["product_price"];
+  $product_stocks = $_POST["product_stocks"];
+  $product_images = $_POST["product_images"];
+  $product_description = $_POST["product_description"];
 
-$sql_sum_price = <<<multi
-  SELECT
-      `total_price`
-  FROM
-      `orders`
-  WHERE
-      `orders_id` = '$orders_id'
-multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
-
-$shipping = $sum_price[0] != null ? 60 : 0;
-
-function query_order_detail()
-{
-  require("connectconfig.php");
-  $orders_id = $_SESSION["orders_id"];
-  $sql_product_cart = <<<multi
-    SELECT
-      *
-    FROM
-      `order_detail`
-    WHERE
-      `orders_id` = $orders_id
+  $sql_update_product = <<<multi
+    INSERT INTO product_list(
+        `product_name`,
+        `product_price`,
+        `product_stocks`,
+        `product_images`,
+        `product_description`
+    )
+    VALUES(
+        '$product_name',
+        '$product_price',
+        '$product_stocks',
+        '$product_images',
+        '$product_description'
+    );
   multi;
-  return $link->query($sql_product_cart);
+  $link->query($sql_update_product);
+  header("Location: commodity_management.php");
+  exit();
 }
-$order_detail = query_order_detail();
+
 ?>
 
 <!DOCTYPE html>
@@ -72,33 +69,24 @@ $order_detail = query_order_detail();
       align-items: center;
     }
 
-    .title {
-      margin: 0;
-    }
-
-    .table td {
-      text-align: center;
-      padding: 20px;
-    }
-
-    .product_images {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    #checkout_btn {
-      font-size: 30px;
-      margin-top: 10px;
+    #title {
       margin-bottom: 20px;
     }
 
-    #total_amount {
-      margin: 10px 0;
+    .container {
+      padding: 30px;
     }
 
-    #error_message {
-      color: red;
+    #product_description {
+      resize: none;
+    }
+
+    .btn {
+      font-size: 20px;
+    }
+
+    #product_image {
+      width: auto;
     }
   </style>
 </head>
@@ -138,55 +126,43 @@ $order_detail = query_order_detail();
   <div class="container">
     <div class="row">
       <div class="col">
-        <table class="table table-bordered">
-          <thead>
-            <tr class="bg-primary text-light">
-              <td colspan="5">
-                <p class="title">管理系統 － 查詢訂單細節 - 會員：<?= $member_name ?>&nbsp 訂單編號：<?= $orders_id ?></p>
-              </td>
-            </tr>
-            <tr class="bg-success text-light">
-              <td>
-                <p class="title">商品名字</p>
-              </td>
-              <td>
-                <p class="title">商品圖片</p>
-              </td>
-              <td>
-                <p class="title">單價</p>
-              </td>
-              <td>
-                <p class="title">購買數量</p>
-              </td>
-              <td>
-                <p class="title">總計</p>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
-              <tr class="text-center">
-                <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
-                <td class="align-middle">
-                  <img class="product_images" src="./img/<?= $order_detail_data['product_images'] ?>" alt="" srcset="">
-                </td>
-                <td class="align-middle">$<?= $order_detail_data['product_price'] ?></td>
-                <td class="align-middle"><?= $order_detail_data['quantity'] ?></td>
-                <td class="align-middle">$<?= $order_detail_data['quantity'] * $order_detail_data['product_price'] ?></td>
-              </tr>
-            <?php } ?>
-            <tr class="table-info">
-              <td colspan="5">
-                <span>運費：$<?= $shipping ?></span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <h1 id="title">新增商品</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <form method="POST" id="add_form">
+          <div class="form-group">
+            <label for="product_name">商品名稱</label>
+            <input type="text" class="form-control" id="product_name" aria-describedby="emailHelp" name="product_name">
+            <small id="emailHelp" class="form-text text-muted">error message</small>
+          </div>
+          <div class="form-group">
+            <label for="product_price">單價</label>
+            <input type="number" class="form-control" id="product_price" min="1" max="9999999999" name="product_price">
+          </div>
+          <div class="form-group">
+            <label for="product_stocks">庫存</label>
+            <input type="number" class="form-control" id="product_stocks" min="0" max="9999999999" name="product_stocks">
+          </div>
+        </form>
+        <form action="upload_images.php" method="post" enctype="multipart/form-data" target="the_iframe">
+          <div class="form-group">
+            <label for="product_image">商品圖片</label>
+            <input type="file" class="form-control-file" id="product_image" name="product_images">
+            <input type="submit" class="btn btn-warning" name="upload_image" value="上傳圖片">
+          </div>
+        </form>
+        <iframe id="is_iframe" name="the_iframe" style="display:none;"></iframe>
+        <div class="form-group">
+          <label for="product_description">商品描述</label>
+          <textarea class="form-control" id="product_description" rows="6" name="product_description" form="add_form"></textarea>
+        </div>
+        <a href="commodity_management.php" class="btn btn-danger">取消</a>
+        <input type="submit" class="btn btn-primary" name="add_product" value="新增商品" form="add_form">
       </div>
     </div>
   </div>
-
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
