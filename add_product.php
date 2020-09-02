@@ -13,6 +13,8 @@ if (isset($_POST["btnSignOut"])) {
 
 require_once("connectconfig.php");
 
+$error_message = "";
+
 if (isset($_POST["add_product"])) {
   $product_name = $_POST["product_name"];
   $product_price = $_POST["product_price"];
@@ -20,7 +22,8 @@ if (isset($_POST["add_product"])) {
   $product_images = $_POST["product_images"];
   $product_description = $_POST["product_description"];
 
-  $sql_update_product = <<<multi
+  if ($product_name !== "" && $product_price !== "" && $product_stocks !== "" && $product_images !== "" && $product_description !== "") {
+    $sql_update_product = <<<multi
     INSERT INTO product_list(
         `product_name`,
         `product_price`,
@@ -36,9 +39,12 @@ if (isset($_POST["add_product"])) {
         '$product_description'
     );
   multi;
-  $link->query($sql_update_product);
-  header("Location: commodity_management.php");
-  exit();
+    $link->query($sql_update_product);
+    header("Location: commodity_management.php");
+    exit();
+  } else {
+    $error_message = "每個欄位必須都有填寫！";
+  }
 }
 
 ?>
@@ -81,12 +87,22 @@ if (isset($_POST["add_product"])) {
       resize: none;
     }
 
-    .btn {
+    .operating_btn {
       font-size: 20px;
+    }
+
+    #upload_img_box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
     #product_image {
       width: auto;
+    }
+
+    #error_message {
+      color: red;
     }
   </style>
 </head>
@@ -135,7 +151,6 @@ if (isset($_POST["add_product"])) {
           <div class="form-group">
             <label for="product_name">商品名稱</label>
             <input type="text" class="form-control" id="product_name" aria-describedby="emailHelp" name="product_name">
-            <small id="emailHelp" class="form-text text-muted">error message</small>
           </div>
           <div class="form-group">
             <label for="product_price">單價</label>
@@ -145,12 +160,16 @@ if (isset($_POST["add_product"])) {
             <label for="product_stocks">庫存</label>
             <input type="number" class="form-control" id="product_stocks" min="0" max="9999999999" name="product_stocks">
           </div>
+          <input type="hidden" id="image_sync" name="product_images" value="">
         </form>
         <form action="upload_images.php" method="post" enctype="multipart/form-data" target="the_iframe">
           <div class="form-group">
             <label for="product_image">商品圖片</label>
-            <input type="file" class="form-control-file" id="product_image" name="product_images">
-            <input type="submit" class="btn btn-warning" name="upload_image" value="上傳圖片">
+            <p>目前選擇：<span id="selected_image"></span></p>
+            <div id="upload_img_box">
+              <input type="file" class="form-control-file" id="product_image" name="product_images">
+              <input type="submit" class="btn btn-warning" id="upload_btn" name="upload_image" value="上傳圖片">
+            </div>
           </div>
         </form>
         <iframe id="is_iframe" name="the_iframe" style="display:none;"></iframe>
@@ -158,8 +177,9 @@ if (isset($_POST["add_product"])) {
           <label for="product_description">商品描述</label>
           <textarea class="form-control" id="product_description" rows="6" name="product_description" form="add_form"></textarea>
         </div>
-        <a href="commodity_management.php" class="btn btn-danger">取消</a>
-        <input type="submit" class="btn btn-primary" name="add_product" value="新增商品" form="add_form">
+        <p id="error_message"><?= $error_message ?></p>
+        <a href="commodity_management.php" class="btn btn-danger operating_btn">取消</a>
+        <input type="submit" class="btn btn-primary operating_btn" name="add_product" value="新增商品" form="add_form">
       </div>
     </div>
   </div>
@@ -167,6 +187,19 @@ if (isset($_POST["add_product"])) {
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <script>
+    let product_image = document.querySelector('#product_image')
+    let image_sync = document.querySelector('#image_sync')
+    let upload_btn = document.querySelector('#upload_btn')
+    let selected_image = document.querySelector('#selected_image')
+    upload_btn.addEventListener('click', () => {
+      let path = product_image.value
+      image_sync.value = path.substr(12)
+      selected_image.innerHTML = path.substr(12)
+      console.log(selected_image.innerHTML);
+    })
+  </script>
 </body>
 
 </html>
