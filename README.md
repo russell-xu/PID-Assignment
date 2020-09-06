@@ -13,12 +13,12 @@
     2.1 註冊/登入功能
     2.2 產品列表及購物車功能 2.3 可查看購買的品項
 
-![Alt text][readme_img/login.png]
-![Alt text][readme_img/register.png]
-![Alt text][readme_img/product_list.png]
-![Alt text][readme_img/cart.png]
-![Alt text][readme_img/order_manage.png]
-![Alt text][readme_img/member_manage.png]
-![Alt text][readme_img/product_manage.png]
-![Alt text][readme_img/add_product.png]
-![Alt text][readme_img/modify_product.png]
+![][readme_img/login.png]
+![][readme_img/register.png]
+![][readme_img/product_list.png]
+![][readme_img/cart.png]
+![][readme_img/order_manage.png]
+![][readme_img/member_manage.png]
+![][readme_img/product_manage.png]
+![][readme_img/add_product.png]
+![][readme_img/modify_product.png]
