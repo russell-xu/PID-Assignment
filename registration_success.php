@@ -13,7 +13,7 @@ if (!isset($_SESSION["userName"]) || $_SESSION["userName"] == "Guest") {
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <title>Lag - Member Page</title>
+    <title>購物網站 - 註冊成功</title>
     <style>
         body {
             height: 100vh;
@@ -39,7 +39,7 @@ if (!isset($_SESSION["userName"]) || $_SESSION["userName"] == "Guest") {
     <div>
         <table class="table table-bordered">
             <thead>
-                <tr class="bg-primary text-light">
+                <tr class="bg-dark text-light">
                     <td>
                         <p class="title">會員系統 － 註冊成功</p>
                     </td>
@@ -49,7 +49,7 @@ if (!isset($_SESSION["userName"]) || $_SESSION["userName"] == "Guest") {
                 <tr>
                     <td>註冊成功！<br>你好，<?= $_SESSION["userName"] ?>。<br>請回登入頁面重新登入。</td>
                 </tr>
-                <tr class="bg-primary text-light">
+                <tr class="bg-dark text-light">
                     <td>
                         <a href="index.php" class="btn btn-warning" role="button">回登入頁面</a>
                     </td>

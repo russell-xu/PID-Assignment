@@ -51,7 +51,7 @@ $query_products = query_products();
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>Lag - Member Page</title>
+  <title>管理員 - 商品管理</title>
   <style>
     body {
       font-size: 20px;
@@ -78,6 +78,21 @@ $query_products = query_products();
     .table td {
       text-align: center;
       padding: 20px;
+      word-wrap: break-word;
+    }
+
+    #product_description {
+      width: 20vw;
+    }
+
+    .table #product_description .describe_box {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      white-space: normal;
     }
 
     .product_images {
@@ -98,10 +113,6 @@ $query_products = query_products();
 
     #error_message {
       color: red;
-    }
-
-    #product_description {
-      width: 25vw;
     }
 
     .product_image {
@@ -188,7 +199,9 @@ $query_products = query_products();
                 <td class="align-middle">
                   <img class="product_image" src="./img/<?= $query_products_data['product_images'] ?>" alt="">
                 </td>
-                <td id="product_description" class="align-middle"><?= $query_products_data['product_description'] ?></td>
+                <td id="product_description" class="align-middle">
+                  <div class="describe_box"><?= $query_products_data['product_description'] ?></div>
+                </td>
                 <td class="align-middle">
                   <form action="" method="post">
                     <input type="hidden" name="product_id" value="<?= $query_products_data['product_id'] ?>">

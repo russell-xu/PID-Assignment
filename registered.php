@@ -71,7 +71,7 @@ if (isset($_POST["btnOK"])) {
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>Lab - Registered</title>
+  <title>購物網站 - 註冊</title>
   <style>
     body {
       height: 100vh;
@@ -102,7 +102,7 @@ if (isset($_POST["btnOK"])) {
   <form method="post" action="registered.php">
     <table class="table table-bordered">
       <thead>
-        <tr class="bg-primary text-light">
+        <tr class="bg-dark text-light">
           <td colspan="2">
             <p class="title">會員系統 - 註冊</p>
           </td>
@@ -143,7 +143,7 @@ if (isset($_POST["btnOK"])) {
           <td colspan="2">
             <input class="btn btn-success register" type="submit" name="btnOK" id="btnOK" value="註冊" />
         </tr>
-        <tr class="bg-primary text-light">
+        <tr class="bg-dark text-light">
           <td colspan="2">
             <input class="btn btn-warning" type="reset" name="btnReset" id="btnReset" value="重設" />
             <input class="btn btn-warning" type="submit" name="btnHome" id="btnHome" value="回登入頁面" />
