@@ -75,6 +75,9 @@ function Update_purchase_quantity()
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="member_side.php">商品列表</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="client_query_order.php">查詢訂單</a>
         </li>
         <li class="nav-item">
@@ -93,10 +96,12 @@ function Update_purchase_quantity()
 
   <div class="container">
     <div class="row">
-      <div class="col">
-        <h1 id="title">庫存不足！</h1>
+      <div class="col text-center">
+        <h1 id="title">庫存不足</h1>
         <p>請查看購物車，檢查購買數量是否大於庫存。</p>
-        <a href="shopping_cart.php" class="btn btn-warning" role="button">回購物車</a>
+        <div class="d-flex justify-content-center">
+          <a href="shopping_cart.php" class="btn btn-warning" role="button">回購物車</a>
+        </div>
       </div>
     </div>
   </div>

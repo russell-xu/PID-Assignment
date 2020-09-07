@@ -75,6 +75,9 @@ function Update_purchase_quantity()
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="member_side.php">商品列表</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="client_query_order.php">查詢訂單</a>
         </li>
         <li class="nav-item">
@@ -93,9 +96,12 @@ function Update_purchase_quantity()
 
   <div class="container">
     <div class="row">
-      <div class="col">
-        <h1 id="title">結帳成功！</h1>
-        <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
+      <div class="col text-center">
+        <h1 id="title">結帳成功</h1>
+        <p>謝謝您的支持，祝購物愉快。</p>
+        <div class="d-flex justify-content-center">
+          <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
+        </div>
       </div>
     </div>
   </div>

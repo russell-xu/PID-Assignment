@@ -131,6 +131,9 @@ function Update_purchase_quantity()
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="member_side.php">商品列表</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="client_query_order.php">查詢訂單</a>
         </li>
         <li class="nav-item">

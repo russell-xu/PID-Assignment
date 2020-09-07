@@ -289,11 +289,14 @@ if (isset($_POST["checkout_btn"])) {
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="member_side.php">商品列表</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="client_query_order.php">查詢訂單</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="shopping_cart.php">購物車
-            <span class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
+            <span id="sum_quantity" class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
           </a>
         </li>
         <li class="nav-item nav_item_form">
@@ -348,11 +351,15 @@ if (isset($_POST["checkout_btn"])) {
                 </td>
                 <td class="align-middle"><?= $cart_data['product_stocks'] ?></td>
                 <td class="align-middle">$<?= $cart_data['product_price'] ?></td>
-                <td class="align-middle"><?= $cart_data['quantity'] ?></td>
-                <td class="align-middle">$<?= $cart_data['quantity'] * $cart_data['product_price'] ?></td>
+                <td class="align-middle">
+                  <input type="hidden" class="username" value="<?= $_SESSION["username"] ?>">
+                  <input type="hidden" class="product_price" value="<?= $cart_data['product_price'] ?>">
+                  <input type="number" class="purchase_quantity" name="purchase_quantity" min="1" max="<?= $cart_data['product_stocks'] ?>" value="<?= $cart_data['quantity'] ?>">
+                </td>
+                <td class="align-middle item_sum_price">$<?= $cart_data['quantity'] * $cart_data['product_price'] ?></td>
                 <td class="align-middle">
                   <form action="" method="post">
-                    <input type="hidden" name="product_id" value="<?= $cart_data['product_id'] ?>">
+                    <input type="hidden" class="product_id" name="product_id" value="<?= $cart_data['product_id'] ?>">
                     <input class="btn btn-outline-danger" type="submit" name="delete_cart_product" value="刪除">
                   </form>
                 </td>
@@ -385,6 +392,9 @@ if (isset($_POST["checkout_btn"])) {
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <script src="purchase_quantity.js"></script>
+
 </body>
 
 </html>
