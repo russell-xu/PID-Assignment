@@ -141,25 +141,22 @@ CREATE TABLE orders(
         paytype,
         username
     )
-VALUES('500060', '貨到付款', 'karta');
-INSERT INTO orders(
-    total_price,
-    paytype,
-    username
-)
-VALUES('1163660', '線上刷卡', 'throuz');
-INSERT INTO orders(
-    total_price,
-    paytype,
-    username
-)
-VALUES('1501560', '貨到付款', 'throuz');
-INSERT INTO orders(
-    total_price,
-    paytype,
-    username
-)
-VALUES('400060', '線上刷卡', 'karta');
+VALUES('500060', '貨到付款', 'karta'),
+('1163660', '線上刷卡', 'throuz'),
+('1501560', '貨到付款', 'throuz'),
+('400060', '線上刷卡', 'karta'),
+('500060', '貨到付款', 'karta'),
+('1163660', '線上刷卡', 'throuz'),
+('1501560', '貨到付款', 'throuz'),
+('400060', '線上刷卡', 'karta'),
+('500060', '貨到付款', 'karta'),
+('1163660', '線上刷卡', 'throuz'),
+('1501560', '貨到付款', 'throuz'),
+('400060', '線上刷卡', 'karta'),
+('500060', '貨到付款', 'karta'),
+('1163660', '線上刷卡', 'throuz'),
+('1501560', '貨到付款', 'throuz'),
+('400060', '線上刷卡', 'karta');
 DROP TABLE IF EXISTS
     order_detail;
 CREATE TABLE order_detail(
@@ -185,97 +182,217 @@ VALUES(
     'BEST Piano',
     '500000',
     'piano.png'
-);
-INSERT INTO order_detail(
-    `orders_id`,
-    `product_id`,
-    `quantity`,
-    `product_name`,
-    `product_price`,
-    `product_images`
-)
-VALUES(
+),
+(
     '2',
     '1',
     '2',
     'BEST Piano',
     '500000',
     'piano.png'
-);
-INSERT INTO order_detail(
-    `orders_id`,
-    `product_id`,
-    `quantity`,
-    `product_name`,
-    `product_price`,
-    `product_images`
-)
-VALUES(
+),
+(
     '2',
     '2',
     '4',
     'GOOD Computer',
     '40000',
     'computer.png'
-);
-INSERT INTO order_detail(
-    `orders_id`,
-    `product_id`,
-    `quantity`,
-    `product_name`,
-    `product_price`,
-    `product_images`
-)
-VALUES(
+),
+(
     '2',
     '3',
     '12',
     'Cheap Food',
     '300',
     'food.png'
-);
-INSERT INTO order_detail(
-    `orders_id`,
-    `product_id`,
-    `quantity`,
-    `product_name`,
-    `product_price`,
-    `product_images`
-)
-VALUES(
+),
+(
     '3',
     '1',
     '3',
     'BEST Piano',
     '500000',
     'piano.png'
-);
-INSERT INTO order_detail(
-    `orders_id`,
-    `product_id`,
-    `quantity`,
-    `product_name`,
-    `product_price`,
-    `product_images`
-)
-VALUES(
+),
+(
     '3',
     '3',
     '5',
     'Cheap Food',
     '300',
     'food.png'
-);
-INSERT INTO order_detail(
-    `orders_id`,
-    `product_id`,
-    `quantity`,
-    `product_name`,
-    `product_price`,
-    `product_images`
-)
-VALUES(
+),
+(
     '4',
+    '2',
+    '10',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '5',
+    '1',
+    '1',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '5',
+    '1',
+    '2',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '6',
+    '2',
+    '4',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '7',
+    '3',
+    '12',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '8',
+    '1',
+    '3',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '8',
+    '3',
+    '5',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '8',
+    '2',
+    '10',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '9',
+    '1',
+    '1',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '10',
+    '1',
+    '2',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '11',
+    '2',
+    '4',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '12',
+    '3',
+    '12',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '12',
+    '1',
+    '3',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '12',
+    '3',
+    '5',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '13',
+    '2',
+    '10',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '14',
+    '1',
+    '1',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '15',
+    '1',
+    '2',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '15',
+    '2',
+    '4',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '15',
+    '3',
+    '12',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '16',
+    '1',
+    '3',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '16',
+    '3',
+    '5',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '16',
     '2',
     '10',
     'GOOD Computer',
