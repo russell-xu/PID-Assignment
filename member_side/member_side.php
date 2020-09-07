@@ -1,17 +1,17 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
 if (isset($_POST["add_cart_input"])) {
   $username = $_SESSION["username"];
@@ -56,7 +56,7 @@ if (isset($_POST["add_cart_input"])) {
 
 function Update_purchase_quantity()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
@@ -205,7 +205,7 @@ $result = $link->query($sql_product_list);
         <div class="col-10">
           <div class="product">
             <div class="img_box">
-              <img src="./img/<?= $row['product_images'] ?>" alt="">
+              <img src="../img/<?= $row['product_images'] ?>" alt="">
             </div>
             <div class="product_content">
               <h3><?= $row['product_name'] ?></h3>

@@ -1,17 +1,17 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
 $error_message = "";
 
@@ -48,7 +48,7 @@ if (isset($_POST["submit_modify"])) {
 function query_product()
 {
   $product_id = $_SESSION["product_id"];
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $sql_product = <<<multi
     SELECT
       *
@@ -72,7 +72,6 @@ $product = $query_product->fetch_assoc();
   <title>管理員 - 修改商品</title>
   <style>
     body {
-      font-size: 20px;
       font-family: Microsoft JhengHei;
       padding-top: 62px;
     }

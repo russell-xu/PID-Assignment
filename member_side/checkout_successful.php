@@ -1,21 +1,21 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
 function Update_purchase_quantity()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
@@ -100,7 +100,7 @@ function Update_purchase_quantity()
         <h1 id="title">結帳成功</h1>
         <p>謝謝您的支持，祝購物愉快。</p>
         <div class="d-flex justify-content-center">
-          <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
+          <a href="member_side.php" class="btn btn-warning" role="button">回商品列表</a>
         </div>
       </div>
     </div>

@@ -1,64 +1,48 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
-if (isset($_POST["normal"])) {
-  $member_name = $_POST["member_name"];
-  $sql_member_status = <<<multi
-    UPDATE
-      member
-    SET
-      `status` = '正常'
-    WHERE
-      `username` = '$member_name'
-  multi;
-  $link->query($sql_member_status);
-}
-
-if (isset($_POST["suspension"])) {
-  $member_name = $_POST["member_name"];
-  $sql_member_status = <<<multi
-    UPDATE
-      member
-    SET
-      `status` = '停權'
-    WHERE
-      `username` = '$member_name'
-  multi;
-  $link->query($sql_member_status);
-}
-
-if (isset($_POST["view_order_history"])) {
-  $_SESSION["member_name"] = $_POST["member_name"];
-  header("Location: manage_member_order.php");
+if (isset($_POST["modify"])) {
+  $_SESSION["product_id"] = $_POST["product_id"];
+  header("Location: manage_modify_product.php");
   exit();
 }
 
-function query_members()
+if (isset($_POST["delete"])) {
+  $product_id = $_POST["product_id"];
+  $sql_product = <<<multi
+    DELETE
+    FROM
+        product_list
+    WHERE
+        `product_id` = '$product_id'
+  multi;
+  $link->query($sql_product);
+}
+
+function query_products()
 {
-  require("connectconfig.php");
-  $sql_member = <<<multi
+  require("../connectconfig.php");
+  $sql_product = <<<multi
     SELECT
       *
     FROM
-      `member`
+      `product_list`
   multi;
-  return $link->query($sql_member);
+  return $link->query($sql_product);
 }
-$query_members = query_members();
-
-$query_members_data = $query_members->fetch_assoc();
+$query_products = query_products();
 ?>
 
 <!DOCTYPE html>
@@ -67,10 +51,9 @@ $query_members_data = $query_members->fetch_assoc();
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>管理員 - 會員管理</title>
+  <title>管理員 - 商品管理</title>
   <style>
     body {
-      font-size: 20px;
       font-family: Microsoft JhengHei;
       padding-top: 62px;
     }
@@ -94,6 +77,21 @@ $query_members_data = $query_members->fetch_assoc();
     .table td {
       text-align: center;
       padding: 20px;
+      word-wrap: break-word;
+    }
+
+    #product_description {
+      width: 20vw;
+    }
+
+    .table #product_description .describe_box {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      white-space: normal;
     }
 
     .product_images {
@@ -115,6 +113,22 @@ $query_members_data = $query_members->fetch_assoc();
     #error_message {
       color: red;
     }
+
+    .product_image {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    #add_product_box {
+      width: 100%;
+      padding: 30px 0;
+    }
+
+    #add_product_btn {
+      display: block;
+      width: 200px;
+    }
   </style>
 </head>
 
@@ -133,7 +147,7 @@ $query_members_data = $query_members->fetch_assoc();
           <a class="nav-link" href="management_side.php">訂單管理</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">會員列表</a>
+          <a class="nav-link" href="member_list.php">會員列表</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="commodity_management.php">商品管理</a>
@@ -153,28 +167,31 @@ $query_members_data = $query_members->fetch_assoc();
   <div class="container">
     <div class="row">
       <div class="col">
+        <div id="add_product_box">
+          <a href="add_product.php" id="add_product_btn" class="btn btn-warning mx-auto">新增商品</a>
+        </div>
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="8">
-                <p class="title">管理系統 － 會員列表</p>
+              <td colspan="6">
+                <p class="title">管理系統 － 商品管理</p>
               </td>
             </tr>
             <tr class="bg-success text-light">
               <td>
-                <p class="title">會員名稱</p>
+                <p class="title">商品名稱</p>
               </td>
               <td>
-                <p class="title">電子信箱</p>
+                <p class="title">單價</p>
               </td>
               <td>
-                <p class="title">手機號碼</p>
+                <p class="title">庫存</p>
               </td>
               <td>
-                <p class="title">密碼</p>
+                <p class="title">商品圖片</p>
               </td>
               <td>
-                <p class="title">狀態</p>
+                <p class="title">商品描述</p>
               </td>
               <td>
                 <p class="title">操作</p>
@@ -182,20 +199,23 @@ $query_members_data = $query_members->fetch_assoc();
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_members_data = $query_members->fetch_assoc()) { ?>
+            <?php while ($query_products_data = $query_products->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $query_members_data['username'] ?></td>
-                <td class="align-middle"><?= $query_members_data['email'] ?>
+                <td class="align-middle"><?= $query_products_data['product_name'] ?></td>
+                <td class="align-middle">$<?= $query_products_data['product_price'] ?>
                 </td>
-                <td class="align-middle"><?= $query_members_data['cellphone'] ?></td>
-                <td class="align-middle"><?= $query_members_data['password'] ?></td>
-                <td class="align-middle"><?= $query_members_data['status'] ?></td>
+                <td class="align-middle"><?= $query_products_data['product_stocks'] ?></td>
+                <td class="align-middle">
+                  <img class="product_image" src="../img/<?= $query_products_data['product_images'] ?>" alt="">
+                </td>
+                <td id="product_description" class="align-middle">
+                  <div class="describe_box"><?= $query_products_data['product_description'] ?></div>
+                </td>
                 <td class="align-middle">
                   <form action="" method="post">
-                    <input type="hidden" name="member_name" value="<?= $query_members_data['username'] ?>">
-                    <input class="btn btn-outline-success" type="submit" name="normal" value="正常">
-                    <input class="btn btn-outline-danger" type="submit" name="suspension" value="停權">
-                    <input class="btn btn-outline-info" type="submit" name="view_order_history" value="查看歷史訂單">
+                    <input type="hidden" name="product_id" value="<?= $query_products_data['product_id'] ?>">
+                    <input class="btn btn-outline-info" type="submit" name="modify" value="修改">
+                    <input class="btn btn-outline-danger" type="submit" name="delete" value="刪除">
                   </form>
                 </td>
               </tr>

@@ -1,21 +1,21 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
 function Update_purchase_quantity()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT

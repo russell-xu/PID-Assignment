@@ -1,49 +1,64 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
+require_once("../connectconfig.php");
 
-require_once("connectconfig.php");
+if (isset($_POST["normal"])) {
+  $member_name = $_POST["member_name"];
+  $sql_member_status = <<<multi
+    UPDATE
+      member
+    SET
+      `status` = '正常'
+    WHERE
+      `username` = '$member_name'
+  multi;
+  $link->query($sql_member_status);
+}
 
-$member_name = $_SESSION["member_name"];
-$orders_id = $_SESSION["orders_id"];
+if (isset($_POST["suspension"])) {
+  $member_name = $_POST["member_name"];
+  $sql_member_status = <<<multi
+    UPDATE
+      member
+    SET
+      `status` = '停權'
+    WHERE
+      `username` = '$member_name'
+  multi;
+  $link->query($sql_member_status);
+}
 
-$sql_sum_price = <<<multi
-  SELECT
-      `total_price`
-  FROM
-      `orders`
-  WHERE
-      `orders_id` = '$orders_id'
-multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
+if (isset($_POST["view_order_history"])) {
+  $_SESSION["member_name"] = $_POST["member_name"];
+  header("Location: manage_member_order.php");
+  exit();
+}
 
-$shipping = $sum_price[0] != null ? 60 : 0;
-
-function query_order_detail()
+function query_members()
 {
-  require("connectconfig.php");
-  $orders_id = $_SESSION["orders_id"];
-  $sql_product_cart = <<<multi
+  require("../connectconfig.php");
+  $sql_member = <<<multi
     SELECT
       *
     FROM
-      `order_detail`
-    WHERE
-      `orders_id` = $orders_id
+      `member`
   multi;
-  return $link->query($sql_product_cart);
+  return $link->query($sql_member);
 }
-$order_detail = query_order_detail();
+$query_members = query_members();
+
+$query_members_data = $query_members->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -52,10 +67,9 @@ $order_detail = query_order_detail();
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>管理員 - 查看訂單細節</title>
+  <title>管理員 - 會員管理</title>
   <style>
     body {
-      font-size: 20px;
       font-family: Microsoft JhengHei;
       padding-top: 62px;
     }
@@ -118,7 +132,7 @@ $order_detail = query_order_detail();
           <a class="nav-link" href="management_side.php">訂單管理</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="member_list.php">會員列表</a>
+          <a class="nav-link" href="#">會員列表</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="commodity_management.php">商品管理</a>
@@ -141,52 +155,55 @@ $order_detail = query_order_detail();
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="5">
-                <p class="title">管理系統 － 查詢訂單細節 - 會員：<?= $member_name ?>&nbsp 訂單編號：<?= $orders_id ?></p>
+              <td colspan="8">
+                <p class="title">管理系統 － 會員列表</p>
               </td>
             </tr>
             <tr class="bg-success text-light">
               <td>
-                <p class="title">商品名字</p>
+                <p class="title">會員名稱</p>
               </td>
               <td>
-                <p class="title">商品圖片</p>
+                <p class="title">電子信箱</p>
               </td>
               <td>
-                <p class="title">單價</p>
+                <p class="title">手機號碼</p>
               </td>
               <td>
-                <p class="title">購買數量</p>
+                <p class="title">密碼</p>
               </td>
               <td>
-                <p class="title">總計</p>
+                <p class="title">狀態</p>
+              </td>
+              <td>
+                <p class="title">操作</p>
               </td>
             </tr>
           </thead>
           <tbody>
-            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
+            <?php while ($query_members_data = $query_members->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
-                <td class="align-middle">
-                  <img class="product_images" src="./img/<?= $order_detail_data['product_images'] ?>" alt="" srcset="">
+                <td class="align-middle"><?= $query_members_data['username'] ?></td>
+                <td class="align-middle"><?= $query_members_data['email'] ?>
                 </td>
-                <td class="align-middle">$<?= $order_detail_data['product_price'] ?></td>
-                <td class="align-middle"><?= $order_detail_data['quantity'] ?></td>
-                <td class="align-middle">$<?= $order_detail_data['quantity'] * $order_detail_data['product_price'] ?></td>
+                <td class="align-middle"><?= $query_members_data['cellphone'] ?></td>
+                <td class="align-middle"><?= $query_members_data['password'] ?></td>
+                <td class="align-middle"><?= $query_members_data['status'] ?></td>
+                <td class="align-middle">
+                  <form action="" method="post">
+                    <input type="hidden" name="member_name" value="<?= $query_members_data['username'] ?>">
+                    <input class="btn btn-outline-success" type="submit" name="normal" value="正常">
+                    <input class="btn btn-outline-danger" type="submit" name="suspension" value="停權">
+                    <input class="btn btn-outline-info" type="submit" name="view_order_history" value="查看歷史訂單">
+                  </form>
+                </td>
               </tr>
             <?php } ?>
-            <tr class="table-info">
-              <td colspan="5">
-                <span>運費：$<?= $shipping ?></span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
-
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

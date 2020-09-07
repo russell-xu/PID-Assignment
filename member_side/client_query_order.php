@@ -1,53 +1,41 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
-$username = $_SESSION["username"];
-$orders_id = $_SESSION["orders_id"];
-
-$sql_sum_price = <<<multi
-  SELECT
-      `total_price`
-  FROM
-      `orders`
-  WHERE
-      `orders_id` = '$orders_id'
-multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
-
-$shipping = $sum_price[0] != null ? 60 : 0;
-
-function query_order_detail()
+function query_orders()
 {
-  require("connectconfig.php");
-  $orders_id = $_SESSION["orders_id"];
+  require("../connectconfig.php");
+  $username = $_SESSION["username"];
   $sql_product_cart = <<<multi
     SELECT
       *
     FROM
-      `order_detail`
+      `orders`
     WHERE
-      `orders_id` = $orders_id
+      `username` = '$username'
+    ORDER BY
+      `orders_id`
+    DESC
   multi;
   return $link->query($sql_product_cart);
 }
-$order_detail = query_order_detail();
+$query_orders = query_orders();
 
 function Update_purchase_quantity()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
@@ -60,6 +48,12 @@ function Update_purchase_quantity()
   $quantity_row = $link->query($sql_quantity)->fetch_row();
   return $quantity_row[0];
 }
+
+if (isset($_POST["view_order_details"])) {
+  $_SESSION["orders_id"] = $_POST["orders_id"];
+  header("Location: client_view_order_detail.php");
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -68,7 +62,7 @@ function Update_purchase_quantity()
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>購物網站 - 查看訂單細節</title>
+  <title>購物網站 - 查詢訂單</title>
   <style>
     body {
       font-size: 20px;
@@ -95,26 +89,6 @@ function Update_purchase_quantity()
     .table td {
       text-align: center;
       padding: 20px;
-    }
-
-    .product_images {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    #checkout_btn {
-      font-size: 30px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-    }
-
-    #total_amount {
-      margin: 10px 0;
-    }
-
-    #error_message {
-      color: red;
     }
   </style>
 </head>
@@ -156,47 +130,48 @@ function Update_purchase_quantity()
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="5">
-                <p class="title">會員系統 － 查詢訂單細節 - 訂單編號：<?= $orders_id ?></p>
+              <td colspan="6">
+                <p class="title">會員系統 － 查詢訂單</p>
               </td>
             </tr>
             <tr class="bg-success text-light">
               <td>
-                <p class="title">商品名字</p>
+                <p class="title">訂單編號</p>
               </td>
               <td>
-                <p class="title">商品圖片</p>
+                <p class="title">訂單時間</p>
               </td>
               <td>
-                <p class="title">單價</p>
+                <p class="title">總金額</p>
               </td>
               <td>
-                <p class="title">購買數量</p>
+                <p class="title">付款方式</p>
               </td>
               <td>
-                <p class="title">總計</p>
+                <p class="title">訂單狀態</p>
+              </td>
+              <td>
+                <p class="title">操作</p>
               </td>
             </tr>
           </thead>
           <tbody>
-            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
+            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
-                <td class="align-middle">
-                  <img class="product_images" src="./img/<?= $order_detail_data['product_images'] ?>" alt="" srcset="">
+                <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['date'] ?>
                 </td>
-                <td class="align-middle">$<?= $order_detail_data['product_price'] ?></td>
-                <td class="align-middle"><?= $order_detail_data['quantity'] ?></td>
-                <td class="align-middle">$<?= $order_detail_data['quantity'] * $order_detail_data['product_price'] ?></td>
+                <td class="align-middle">$<?= $query_orders_data['total_price'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['paytype'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['status'] ?></td>
+                <td class="align-middle">
+                  <form action="" method="post">
+                    <input type="hidden" name="orders_id" value="<?= $query_orders_data['orders_id'] ?>">
+                    <input class="btn btn-outline-info" type="submit" name="view_order_details" value="查看訂單細節">
+                  </form>
+                </td>
               </tr>
             <?php } ?>
-            <tr class="table-info">
-              <td colspan="5">
-                <span>運費：$<?= $shipping ?></span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
-                <a href="client_query_order.php" class="btn btn-warning" role="button">回查詢訂單頁面</a>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>

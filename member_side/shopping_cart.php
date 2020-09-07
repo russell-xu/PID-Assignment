@@ -1,21 +1,21 @@
 <?php
 session_start();
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
 function grab_shopping_cart_information()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_product_cart = <<<multi
     SELECT
@@ -37,7 +37,7 @@ $shopping_cart_data = grab_shopping_cart_information();
 
 function Update_purchase_quantity()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
@@ -87,7 +87,7 @@ $error_message = "";
 
 function check_stock_sufficient()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
   $username = $_SESSION["username"];
   $sql_product_cart = <<<multi
     SELECT
@@ -347,7 +347,7 @@ if (isset($_POST["checkout_btn"])) {
               <tr class="text-center">
                 <td class="align-middle"><?= $cart_data['product_name'] ?></td>
                 <td class="align-middle">
-                  <img class="product_images" src="./img/<?= $cart_data['product_images'] ?>" alt="" srcset="">
+                  <img class="product_images" src="../img/<?= $cart_data['product_images'] ?>" alt="" srcset="">
                 </td>
                 <td class="align-middle"><?= $cart_data['product_stocks'] ?></td>
                 <td class="align-middle">$<?= $cart_data['product_price'] ?></td>
@@ -379,7 +379,7 @@ if (isset($_POST["checkout_btn"])) {
                   <input class="btn btn-success" type="submit" id="checkout_btn" name="checkout_btn" value="結帳">
                 </form>
                 <p id="error_message"><?= $error_message ?></p>
-                <a href="member_side.php" class="btn btn-warning" role="button">回購買頁面</a>
+                <a href="member_side.php" class="btn btn-warning" role="button">回商品列表</a>
               </td>
             </tr>
           </tbody>

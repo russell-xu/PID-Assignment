@@ -1,59 +1,30 @@
 <?php
 session_start();
-if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
-  header("Location: index.php");
+if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
-require_once("connectconfig.php");
 
-if (isset($_POST["complete_order"])) {
-  $orders_id = $_POST["orders_id"];
-  $sql_order_status = <<<multi
-    UPDATE
-      orders
-    SET
-      `status` = '已完成'
-    WHERE
-      `orders_id` = '$orders_id'
-  multi;
-  $link->query($sql_order_status);
-}
-
-if (isset($_POST["cancel_order"])) {
-  $orders_id = $_POST["orders_id"];
-  $sql_order_status = <<<multi
-    UPDATE
-      orders
-    SET
-      `status` = '已取消'
-    WHERE
-      `orders_id` = '$orders_id'
-  multi;
-  $link->query($sql_order_status);
-}
-
-if (isset($_POST["view_order_details"])) {
-  $_SESSION["orders_id"] = $_POST["orders_id"];
-  $_SESSION["member_name"] = $_POST["member_name"];
-  header("Location: manage_view_order_detail.php");
-  exit();
-}
+require_once("../connectconfig.php");
 
 function query_orders()
 {
-  require("connectconfig.php");
+  require("../connectconfig.php");
+  $member_name = $_SESSION["member_name"];
   $sql_product_cart = <<<multi
     SELECT
       *
     FROM
       `orders`
+    WHERE
+      `username` = '$member_name'
     ORDER BY
       `orders_id`
     DESC
@@ -61,6 +32,12 @@ function query_orders()
   return $link->query($sql_product_cart);
 }
 $query_orders = query_orders();
+
+if (isset($_POST["view_order_details"])) {
+  $_SESSION["orders_id"] = $_POST["orders_id"];
+  header("Location: manage_view_order_detail.php");
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -69,10 +46,9 @@ $query_orders = query_orders();
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>管理員 - 訂單管理</title>
+  <title>Lag - Member Page</title>
   <style>
     body {
-      font-size: 20px;
       font-family: Microsoft JhengHei;
       padding-top: 62px;
     }
@@ -97,26 +73,6 @@ $query_orders = query_orders();
       text-align: center;
       padding: 20px;
     }
-
-    .product_images {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-    }
-
-    #checkout_btn {
-      font-size: 30px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-    }
-
-    #total_amount {
-      margin: 10px 0;
-    }
-
-    #error_message {
-      color: red;
-    }
   </style>
 </head>
 
@@ -132,7 +88,7 @@ $query_orders = query_orders();
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">訂單管理</a>
+          <a class="nav-link" href="management_side.php">訂單管理</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="member_list.php">會員列表</a>
@@ -158,8 +114,8 @@ $query_orders = query_orders();
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="7">
-                <p class="title">管理系統 － 訂單管理</p>
+              <td colspan="6">
+                <p class="title">管理系統 － 查詢歷史訂單 － 會員：<?= $_SESSION["member_name"] ?></p>
               </td>
             </tr>
             <tr class="bg-success text-light">
@@ -170,10 +126,10 @@ $query_orders = query_orders();
                 <p class="title">訂單時間</p>
               </td>
               <td>
-                <p class="title">訂單金額</p>
+                <p class="title">總金額</p>
               </td>
               <td>
-                <p class="title">會員名稱</p>
+                <p class="title">付款方式</p>
               </td>
               <td>
                 <p class="title">訂單狀態</p>
@@ -190,14 +146,11 @@ $query_orders = query_orders();
                 <td class="align-middle"><?= $query_orders_data['date'] ?>
                 </td>
                 <td class="align-middle">$<?= $query_orders_data['total_price'] ?></td>
-                <td class="align-middle"><?= $query_orders_data['username'] ?></td>
+                <td class="align-middle"><?= $query_orders_data['paytype'] ?></td>
                 <td class="align-middle"><?= $query_orders_data['status'] ?></td>
                 <td class="align-middle">
                   <form action="" method="post">
                     <input type="hidden" name="orders_id" value="<?= $query_orders_data['orders_id'] ?>">
-                    <input type="hidden" name="member_name" value="<?= $query_orders_data['username'] ?>">
-                    <input class="btn btn-outline-success" type="submit" name="complete_order" value="完成訂單">
-                    <input class="btn btn-outline-danger" type="submit" name="cancel_order" value="取消訂單">
                     <input class="btn btn-outline-info" type="submit" name="view_order_details" value="查看訂單細節">
                   </form>
                 </td>
@@ -208,6 +161,7 @@ $query_orders = query_orders();
       </div>
     </div>
   </div>
+
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

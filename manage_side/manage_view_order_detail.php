@@ -1,59 +1,49 @@
 <?php
 session_start();
-if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
-  header("Location: index.php");
+if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
+  header("Location: ../index.php");
   exit();
 }
 
 if (isset($_POST["btnSignOut"])) {
   $_SESSION["username"] = "Guest";
-  header("Location: index.php");
+  header("Location: ../index.php");
   exit();
 }
 
 
-require_once("connectconfig.php");
+require_once("../connectconfig.php");
 
-function query_orders()
+$member_name = $_SESSION["member_name"];
+$orders_id = $_SESSION["orders_id"];
+
+$sql_sum_price = <<<multi
+  SELECT
+      `total_price`
+  FROM
+      `orders`
+  WHERE
+      `orders_id` = '$orders_id'
+multi;
+$sum_price = $link->query($sql_sum_price)->fetch_row();
+
+$shipping = $sum_price[0] != null ? 60 : 0;
+
+function query_order_detail()
 {
-  require("connectconfig.php");
-  $username = $_SESSION["username"];
+  require("../connectconfig.php");
+  $orders_id = $_SESSION["orders_id"];
   $sql_product_cart = <<<multi
     SELECT
       *
     FROM
-      `orders`
+      `order_detail`
     WHERE
-      `username` = '$username'
-    ORDER BY
-      `orders_id`
-    DESC
+      `orders_id` = $orders_id
   multi;
   return $link->query($sql_product_cart);
 }
-$query_orders = query_orders();
-
-function Update_purchase_quantity()
-{
-  require("connectconfig.php");
-  $username = $_SESSION["username"];
-  $sql_quantity = <<<multi
-    SELECT
-        SUM(`quantity`)
-    FROM
-        shopping_cart
-    WHERE
-        username = '$username'
-    multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
-}
-
-if (isset($_POST["view_order_details"])) {
-  $_SESSION["orders_id"] = $_POST["orders_id"];
-  header("Location: client_view_order_detail.php");
-  exit();
-}
+$order_detail = query_order_detail();
 ?>
 
 <!DOCTYPE html>
@@ -62,10 +52,9 @@ if (isset($_POST["view_order_details"])) {
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <title>購物網站 - 查詢訂單</title>
+  <title>管理員 - 查看訂單細節</title>
   <style>
     body {
-      font-size: 20px;
       font-family: Microsoft JhengHei;
       padding-top: 62px;
     }
@@ -90,12 +79,32 @@ if (isset($_POST["view_order_details"])) {
       text-align: center;
       padding: 20px;
     }
+
+    .product_images {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    #checkout_btn {
+      font-size: 30px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    #total_amount {
+      margin: 10px 0;
+    }
+
+    #error_message {
+      color: red;
+    }
   </style>
 </head>
 
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="member_side.php">我是購物網站</a>
+    <a class="navbar-brand" href="#">我是購物網站</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -105,15 +114,16 @@ if (isset($_POST["view_order_details"])) {
           <a class="nav-link" href="#">你好，<?= $_SESSION["username"] ?></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="member_side.php">商品列表</a>
+          <a class="nav-link" href="management_side.php">訂單管理</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="client_query_order.php">查詢訂單</a>
+          <a class="nav-link" href="member_list.php">會員列表</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="shopping_cart.php">購物車
-            <span class="badge badge-danger"><?= Update_purchase_quantity(); ?></span>
-          </a>
+          <a class="nav-link" href="commodity_management.php">商品管理</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="report.php">報表</a>
         </li>
         <li class="nav-item nav_item_form">
           <form action="" method="post">
@@ -130,48 +140,46 @@ if (isset($_POST["view_order_details"])) {
         <table class="table table-bordered">
           <thead>
             <tr class="bg-primary text-light">
-              <td colspan="6">
-                <p class="title">會員系統 － 查詢訂單</p>
+              <td colspan="5">
+                <p class="title">管理系統 － 查詢訂單細節 - 會員：<?= $member_name ?>&nbsp 訂單編號：<?= $orders_id ?></p>
               </td>
             </tr>
             <tr class="bg-success text-light">
               <td>
-                <p class="title">訂單編號</p>
+                <p class="title">商品名字</p>
               </td>
               <td>
-                <p class="title">訂單時間</p>
+                <p class="title">商品圖片</p>
               </td>
               <td>
-                <p class="title">總金額</p>
+                <p class="title">單價</p>
               </td>
               <td>
-                <p class="title">付款方式</p>
+                <p class="title">購買數量</p>
               </td>
               <td>
-                <p class="title">訂單狀態</p>
-              </td>
-              <td>
-                <p class="title">操作</p>
+                <p class="title">總計</p>
               </td>
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
+            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
               <tr class="text-center">
-                <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
-                <td class="align-middle"><?= $query_orders_data['date'] ?>
-                </td>
-                <td class="align-middle">$<?= $query_orders_data['total_price'] ?></td>
-                <td class="align-middle"><?= $query_orders_data['paytype'] ?></td>
-                <td class="align-middle"><?= $query_orders_data['status'] ?></td>
+                <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
                 <td class="align-middle">
-                  <form action="" method="post">
-                    <input type="hidden" name="orders_id" value="<?= $query_orders_data['orders_id'] ?>">
-                    <input class="btn btn-outline-info" type="submit" name="view_order_details" value="查看訂單細節">
-                  </form>
+                  <img class="product_images" src="../img/<?= $order_detail_data['product_images'] ?>" alt="" srcset="">
                 </td>
+                <td class="align-middle">$<?= $order_detail_data['product_price'] ?></td>
+                <td class="align-middle"><?= $order_detail_data['quantity'] ?></td>
+                <td class="align-middle">$<?= $order_detail_data['quantity'] * $order_detail_data['product_price'] ?></td>
               </tr>
             <?php } ?>
+            <tr class="table-info">
+              <td colspan="5">
+                <span>運費：$<?= $shipping ?></span>
+                <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

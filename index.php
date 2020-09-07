@@ -14,9 +14,9 @@ if (isset($_POST["btnOK"])) {
   if ($username_row !== null && $username != "" && $password != "" && $username_row[0] == $username && $username_row[4] == $password && $username_row[5] == '正常') {
     $_SESSION["username"] = $username;
     if ($_SESSION["username"] == "admin") {
-      header("Location: management_side.php");
+      header("Location: manage_side/management_side.php");
     } else {
-      header("Location: member_side.php");
+      header("Location: member_side/member_side.php");
     }
     exit();
   } else {
