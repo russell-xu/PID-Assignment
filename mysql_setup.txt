@@ -119,44 +119,149 @@ CREATE TABLE shopping_cart(
     username,
     product_id
 )
-VALUES('3', 'karta', '1');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('1', 'karta', '3');
-INSERT INTO shopping_cart(
-    quantity,
-    username,
-    product_id
-)
-VALUES('5', 'karta', '2');
+VALUES('3', 'karta', '1'),('1', 'karta', '2'),('5', 'karta', '3');
 DROP TABLE IF EXISTS
     orders;
 CREATE TABLE orders(
     `orders_id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
     `date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(), `total_price` INT(11) UNSIGNED, `paytype` ENUM('ATM匯款', '線上刷卡', '貨到付款') NOT NULL, `username` VARCHAR(20) NOT NULL, `status` ENUM('處理中', '已完成', '已取消') NOT NULL DEFAULT '處理中', PRIMARY KEY(orders_id), FOREIGN KEY(username) REFERENCES member(username)); INSERT INTO orders(
+        DATE,
         total_price,
         paytype,
         username
     )
-VALUES('500060', '貨到付款', 'karta'),
-('1163660', '線上刷卡', 'throuz'),
-('1501560', '貨到付款', 'throuz'),
-('400060', '線上刷卡', 'karta'),
-('500060', '貨到付款', 'karta'),
-('1163660', '線上刷卡', 'throuz'),
-('1501560', '貨到付款', 'throuz'),
-('400060', '線上刷卡', 'karta'),
-('500060', '貨到付款', 'karta'),
-('1163660', '線上刷卡', 'throuz'),
-('1501560', '貨到付款', 'throuz'),
-('400060', '線上刷卡', 'karta'),
-('500060', '貨到付款', 'karta'),
-('1163660', '線上刷卡', 'throuz'),
-('1501560', '貨到付款', 'throuz'),
-('400060', '線上刷卡', 'karta');
+VALUES(
+    '2020-01-07 12:12:12',
+    '500060',
+    '貨到付款',
+    'karta'
+),
+(
+    '2020-01-09 12:12:12',
+    '1163660',
+    '線上刷卡',
+    'throuz'
+),
+(
+    '2020-02-08 12:12:12',
+    '1501560',
+    '貨到付款',
+    'throuz'
+),
+(
+    '2020-02-12 12:12:12',
+    '400060',
+    '線上刷卡',
+    'karta'
+),
+(
+    '2020-03-13 12:12:12',
+    '500060',
+    '貨到付款',
+    'karta'
+),
+(
+    '2020-03-15 12:12:12',
+    '1163660',
+    '線上刷卡',
+    'throuz'
+),
+(
+    '2020-03-17 12:12:12',
+    '1501560',
+    '貨到付款',
+    'throuz'
+),
+(
+    '2020-04-01 12:12:12',
+    '400060',
+    '線上刷卡',
+    'karta'
+),
+(
+    '2020-04-07 12:12:12',
+    '500060',
+    '貨到付款',
+    'karta'
+),
+(
+    '2020-05-08 12:12:12',
+    '1163660',
+    '線上刷卡',
+    'throuz'
+),
+(
+    '2020-05-15 12:12:12',
+    '1501560',
+    '貨到付款',
+    'throuz'
+),
+(
+    '2020-05-16 12:12:12',
+    '400060',
+    '線上刷卡',
+    'karta'
+),
+(
+    '2020-06-17 12:12:12',
+    '500060',
+    '貨到付款',
+    'karta'
+),
+(
+    '2020-06-18 12:12:12',
+    '1163660',
+    '線上刷卡',
+    'throuz'
+),
+(
+    '2020-06-20 12:12:12',
+    '1501560',
+    '貨到付款',
+    'throuz'
+),
+(
+    '2020-06-22 12:12:12',
+    '400060',
+    '線上刷卡',
+    'karta'
+),
+(
+    '2020-07-15 12:12:12',
+    '500060',
+    '貨到付款',
+    'karta'
+),
+(
+    '2020-07-16 12:12:12',
+    '1163660',
+    '線上刷卡',
+    'throuz'
+),
+(
+    '2020-08-02 12:12:12',
+    '1501560',
+    '貨到付款',
+    'throuz'
+),
+(
+    '2020-08-05 12:12:12',
+    '400060',
+    '線上刷卡',
+    'karta'
+),
+(
+    '2020-09-06 12:12:12',
+    '500060',
+    '貨到付款',
+    'karta'
+),
+(
+    '2020-09-08 12:12:12',
+    '1163660',
+    '線上刷卡',
+    'throuz'
+);
 DROP TABLE IF EXISTS
     order_detail;
 CREATE TABLE order_detail(
@@ -398,4 +503,76 @@ VALUES(
     'GOOD Computer',
     '40000',
     'computer.png'
-);
+),
+(
+    '17',
+    '3',
+    '5',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '17',
+    '2',
+    '10',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '17',
+    '1',
+    '1',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '18',
+    '1',
+    '2',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '19',
+    '2',
+    '4',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+),
+(
+    '19',
+    '3',
+    '12',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '20',
+    '1',
+    '3',
+    'BEST Piano',
+    '500000',
+    'piano.png'
+),
+(
+    '21',
+    '3',
+    '5',
+    'Cheap Food',
+    '300',
+    'food.png'
+),
+(
+    '22',
+    '2',
+    '10',
+    'GOOD Computer',
+    '40000',
+    'computer.png'
+);;

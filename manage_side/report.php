@@ -79,25 +79,47 @@ require_once("../connectconfig.php"); ?>
   <div class="container">
     <div class="row">
       <div class="col">
-        <form>
-          <div class="form-group">
-            <label for="start_date">選擇起始日</label>
-            <input type="date" class="form-control" id="start_date" name="start_date">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">查詢日營收</a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">查詢月營收</a>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+            <form>
+              <div class="form-group">
+                <label for="start_date">選擇起始日</label>
+                <input type="date" class="form-control" id="start_date" name="start_date">
+              </div>
+              <div class="form-group">
+                <label for="end_date">選擇結束日</label>
+                <input type="date" class="form-control" id="end_date" name="end_date">
+              </div>
+              <button type="button" id="day_submit" class="btn btn-primary">提交</button>
+            </form>
+            <div id="single_day_canvas_box"></div>
           </div>
-          <div class="form-group">
-            <label for="end_date">選擇結束日</label>
-            <input type="date" class="form-control" id="end_date" name="end_date">
+          <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <form>
+              <div class="form-group">
+                <label for="start_month">選擇起始月</label>
+                <input type="month" class="form-control" id="start_month" name="start_month">
+              </div>
+              <div class="form-group">
+                <label for="end_month">選擇結束月</label>
+                <input type="month" class="form-control" id="end_month" name="end_month">
+              </div>
+              <button type="button" id="month_submit" class="btn btn-primary">提交</button>
+            </form>
+            <div id="month_canvas_box"></div>
           </div>
-          <button type="button" id="day_submit" class="btn btn-primary">提交</button>
-        </form>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <div id="canvas_box">
         </div>
       </div>
     </div>
+
   </div>
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
@@ -106,7 +128,8 @@ require_once("../connectconfig.php"); ?>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 
-  <script src="report.js"></script>
+  <script src="single_day_report.js"></script>
+  <script src="month_report.js"></script>
 
 </body>
 
