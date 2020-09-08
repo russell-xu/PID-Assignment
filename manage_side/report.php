@@ -76,7 +76,7 @@ require_once("../connectconfig.php"); ?>
     </div>
   </nav>
 
-  <div class="container">
+  <div class="container pt-3">
     <div class="row">
       <div class="col">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -89,7 +89,7 @@ require_once("../connectconfig.php"); ?>
         </ul>
         <div class="tab-content" id="myTabContent">
           <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-            <form>
+            <form class="p-3">
               <div class="form-group">
                 <label for="start_date">選擇起始日</label>
                 <input type="date" class="form-control" id="start_date" name="start_date">
@@ -103,7 +103,7 @@ require_once("../connectconfig.php"); ?>
             <div id="single_day_canvas_box"></div>
           </div>
           <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-            <form>
+            <form class="p-3">
               <div class="form-group">
                 <label for="start_month">選擇起始月</label>
                 <input type="month" class="form-control" id="start_month" name="start_month">
