@@ -25,23 +25,23 @@
 3.電子信箱不得與其他使用者重複<br>
 4.手機號碼不得與其他使用者重複<br>
 5.密碼大於8個字元，需含大小寫字母與數字<br>
-![](img/register.png)
+![](readme_img/register.png)
 ### 登入
 只需使用者代號及密碼就能登入<br>
-![](img/login.png)
+![](readme_img/login.png)
 ### 商品列表
 1.可將商品加入購物車<br>
 2.加入購物車時右上角的購物車圖示會同步購買數量<br>
-![](img/product_list.png)
+![](readme_img/product_list.png)
 ### 查詢訂單
 1.可查看歷史訂單<br>
 2.可查看訂單狀態<br>
 3.可查看歷史訂單細節<br>
-![](img/order_client.png)
+![](readme_img/order_client.png)
 ### 購物車
 1.可修改購買數量<br>
 2.修改購買數量時右上角的購物車圖示會同步購買數量<br>
 3.修改購買數量時金額會同步計算<br>
 4.可刪除購買物品<br>
 5.結帳時若庫存不足會購買失敗並給予提示<br>
-![](img/cart.png)
+![](readme_img/cart.png)
