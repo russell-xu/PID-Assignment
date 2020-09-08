@@ -79,7 +79,23 @@ require_once("../connectconfig.php"); ?>
   <div class="container">
     <div class="row">
       <div class="col">
-        <canvas id="myChart"></canvas>
+        <form>
+          <div class="form-group">
+            <label for="start_date">選擇起始日</label>
+            <input type="date" class="form-control" id="start_date" name="start_date">
+          </div>
+          <div class="form-group">
+            <label for="end_date">選擇結束日</label>
+            <input type="date" class="form-control" id="end_date" name="end_date">
+          </div>
+          <button type="button" id="day_submit" class="btn btn-primary">提交</button>
+        </form>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div id="canvas_box">
+        </div>
       </div>
     </div>
   </div>
