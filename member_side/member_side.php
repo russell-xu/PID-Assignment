@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 if (isset($_POST["add_cart_input"])) {
   $username = $_SESSION["username"];
@@ -27,7 +28,9 @@ if (isset($_POST["add_cart_input"])) {
     WHERE
       username = '$username' AND product_id = '$product_id'
   multi;
-  $cart_has_product = $link->query($sql_cart_has_product)->fetch_row();
+  $query_cart_has_product = $db->prepare($sql_cart_has_product);
+  $query_cart_has_product->execute();
+  $cart_has_product = $query_cart_has_product->fetch(PDO::FETCH_ASSOC);
 
   if ($purchase_quantity > 0) {
     if ($cart_has_product == null) {
@@ -39,7 +42,7 @@ if (isset($_POST["add_cart_input"])) {
         )
         VALUES('$purchase_quantity', '$username', '$product_id');
       multi;
-      $link->query($sql_add_cart);
+      $db->prepare($sql_add_cart)->execute();
     } else {
       $sql_update_add_cart = <<<multi
         UPDATE
@@ -49,7 +52,7 @@ if (isset($_POST["add_cart_input"])) {
         WHERE
             username = '$username' AND product_id = '$product_id'
       multi;
-      $link->query($sql_update_add_cart);
+      $db->prepare($sql_update_add_cart)->execute();
     }
   }
 }
@@ -66,8 +69,10 @@ function Update_purchase_quantity()
     WHERE
         username = '$username'
     multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
+  $query_quantity = $db->prepare($sql_quantity);
+  $query_quantity->execute();
+  $quantity_row = $query_quantity->fetch(PDO::FETCH_ASSOC);
+  return $quantity_row['quantity'];
 }
 
 $sql_product_list = <<<multi
@@ -76,7 +81,8 @@ $sql_product_list = <<<multi
   FROM
       `product_list`
 multi;
-$result = $link->query($sql_product_list);
+$result = $db->prepare($sql_product_list);
+$result->execute();
 ?>
 
 <!DOCTYPE html>
@@ -200,7 +206,7 @@ $result = $link->query($sql_product_list);
         <h1 class="product_list_title">商品列表</h1>
       </div>
     </div>
-    <?php while ($row = $result->fetch_assoc()) { ?>
+    <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) { ?>
       <div class="row product_list">
         <div class="col-10">
           <div class="product">

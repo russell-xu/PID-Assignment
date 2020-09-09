@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 if (isset($_POST["complete_order"])) {
   $orders_id = $_POST["orders_id"];
@@ -23,7 +24,7 @@ if (isset($_POST["complete_order"])) {
     WHERE
       `orders_id` = '$orders_id'
   multi;
-  $link->query($sql_order_status);
+  $db->prepare($sql_order_status)->execute();
 }
 
 if (isset($_POST["cancel_order"])) {
@@ -36,7 +37,7 @@ if (isset($_POST["cancel_order"])) {
     WHERE
       `orders_id` = '$orders_id'
   multi;
-  $link->query($sql_order_status);
+  $db->prepare($sql_order_status)->execute();
 }
 
 if (isset($_POST["view_order_details"])) {
@@ -58,7 +59,7 @@ function query_orders()
       `orders_id`
     DESC
   multi;
-  return $link->query($sql_product_cart);
+  return $db->prepare($sql_product_cart)->execute();
 }
 $query_orders = query_orders();
 ?>
@@ -183,7 +184,7 @@ $query_orders = query_orders();
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
+            <?php while ($query_orders_data = $query_orders->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
                 <td class="align-middle"><?= $query_orders_data['date'] ?>

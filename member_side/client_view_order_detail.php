@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: ../index.php");
   exit();
@@ -12,7 +14,6 @@ if (isset($_POST["btnSignOut"])) {
 }
 
 
-require_once("../connectconfig.php");
 
 $username = $_SESSION["username"];
 $orders_id = $_SESSION["orders_id"];
@@ -25,15 +26,14 @@ $sql_sum_price = <<<multi
   WHERE
       `orders_id` = '$orders_id'
 multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
+$query_sum_price = $db->prepare($sql_sum_price);
+$query_sum_price->execute();
+$sum_price = $query_sum_price->fetch(PDO::FETCH_ASSOC);
 
-$shipping = $sum_price[0] != null ? 60 : 0;
+$shipping = $sum_price['total_price'] != null ? 60 : 0;
 
-function query_order_detail()
-{
-  require("../connectconfig.php");
-  $orders_id = $_SESSION["orders_id"];
-  $sql_product_cart = <<<multi
+$orders_id = $_SESSION["orders_id"];
+$sql_product_cart = <<<multi
     SELECT
       *
     FROM
@@ -41,9 +41,9 @@ function query_order_detail()
     WHERE
       `orders_id` = $orders_id
   multi;
-  return $link->query($sql_product_cart);
-}
-$order_detail = query_order_detail();
+$order_detail = $db->prepare($sql_product_cart);
+$order_detail->execute();
+
 
 function Update_purchase_quantity()
 {
@@ -51,14 +51,16 @@ function Update_purchase_quantity()
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
-        SUM(`quantity`)
+        SUM(`quantity`) AS `quantity`
     FROM
         shopping_cart
     WHERE
         username = '$username'
     multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
+  $query_quantity = $db->prepare($sql_quantity);
+  $query_quantity->execute();
+  $quantity_row = $query_quantity->fetch(PDO::FETCH_ASSOC);
+  return $quantity_row['quantity'];
 }
 ?>
 
@@ -179,7 +181,7 @@ function Update_purchase_quantity()
             </tr>
           </thead>
           <tbody>
-            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
+            <?php while ($order_detail_data = $order_detail->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
                 <td class="align-middle">

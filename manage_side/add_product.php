@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 $error_message = "";
 
@@ -38,8 +39,8 @@ if (isset($_POST["add_product"])) {
         '$product_images',
         '$product_description'
     );
-  multi;
-    $link->query($sql_update_product);
+    multi;
+    $db->prepare($sql_update_product)->execute();
     header("Location: commodity_management.php");
     exit();
   } else {

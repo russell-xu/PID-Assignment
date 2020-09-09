@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 if (isset($_POST["normal"])) {
   $member_name = $_POST["member_name"];
@@ -23,7 +24,7 @@ if (isset($_POST["normal"])) {
     WHERE
       `username` = '$member_name'
   multi;
-  $link->query($sql_member_status);
+  $db->prepare($sql_member_status)->execute();
 }
 
 if (isset($_POST["suspension"])) {
@@ -36,7 +37,7 @@ if (isset($_POST["suspension"])) {
     WHERE
       `username` = '$member_name'
   multi;
-  $link->query($sql_member_status);
+  $db->prepare($sql_member_status)->execute();
 }
 
 if (isset($_POST["view_order_history"])) {
@@ -45,20 +46,16 @@ if (isset($_POST["view_order_history"])) {
   exit();
 }
 
-function query_members()
-{
-  require("../connectconfig.php");
-  $sql_member = <<<multi
-    SELECT
-      *
-    FROM
-      `member`
-  multi;
-  return $link->query($sql_member);
-}
-$query_members = query_members();
 
-$query_members_data = $query_members->fetch_assoc();
+$sql_member = <<<multi
+  SELECT
+    *
+  FROM
+    `member`
+multi;
+$query_members = $db->prepare($sql_member);
+$query_members->execute();
+$query_members_data = $query_members->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -181,7 +178,7 @@ $query_members_data = $query_members->fetch_assoc();
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_members_data = $query_members->fetch_assoc()) { ?>
+            <?php while ($query_members_data = $query_members->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $query_members_data['username'] ?></td>
                 <td class="align-middle"><?= $query_members_data['email'] ?>

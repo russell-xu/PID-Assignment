@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,7 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php"); ?>
+?>
 
 <!DOCTYPE html>
 <html>

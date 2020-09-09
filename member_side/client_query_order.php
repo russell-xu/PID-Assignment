@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: ../index.php");
   exit();
@@ -12,13 +14,9 @@ if (isset($_POST["btnSignOut"])) {
 }
 
 
-require_once("../connectconfig.php");
-
-function query_orders()
-{
-  require("../connectconfig.php");
-  $username = $_SESSION["username"];
-  $sql_product_cart = <<<multi
+require("../connectconfig.php");
+$username = $_SESSION["username"];
+$sql_product_cart = <<<multi
     SELECT
       *
     FROM
@@ -29,9 +27,9 @@ function query_orders()
       `orders_id`
     DESC
   multi;
-  return $link->query($sql_product_cart);
-}
-$query_orders = query_orders();
+$query_orders = $db->prepare($sql_product_cart);
+$query_orders->execute();
+
 
 function Update_purchase_quantity()
 {
@@ -39,14 +37,16 @@ function Update_purchase_quantity()
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
-        SUM(`quantity`)
+        SUM(`quantity`) AS `quantity`
     FROM
         shopping_cart
     WHERE
         username = '$username'
     multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
+  $query_quantity = $db->prepare($sql_quantity);
+  $query_quantity->execute();
+  $quantity_row = $query_quantity->fetch(PDO::FETCH_ASSOC);
+  return $quantity_row['quantity'];
 }
 
 if (isset($_POST["view_order_details"])) {
@@ -156,7 +156,7 @@ if (isset($_POST["view_order_details"])) {
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
+            <?php while ($query_orders_data = $query_orders->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
                 <td class="align-middle"><?= $query_orders_data['date'] ?>

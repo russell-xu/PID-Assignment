@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once("connectconfig.php");
 
 $ErrorMessage = "";
 
@@ -7,11 +8,19 @@ if (isset($_POST["btnOK"])) {
   $username = $_POST["username"];
   $password = $_POST["password"];
 
-  require_once("connectconfig.php");
-  $sql_username = "SELECT * FROM member WHERE username = '$username'";
-  $username_row = $link->query($sql_username)->fetch_row();
+  $sql_user_data = <<<multi
+  SELECT
+    *
+  FROM
+    member
+  WHERE
+    username = ?
+  multi;
+  $user_data = $db->prepare($sql_user_data);
+  $user_data->execute([$username]);
+  $user_data_row = $user_data->fetch(PDO::FETCH_ASSOC);
 
-  if ($username_row !== null && $username != "" && $password != "" && $username_row[0] == $username && $username_row[4] == $password && $username_row[5] == '正常') {
+  if ($user_data_row !== null && $username != "" && $password != "" && $user_data_row['username'] == $username && $user_data_row['password'] == $password && $user_data_row['status'] == '正常') {
     $_SESSION["username"] = $username;
     if ($_SESSION["username"] == "admin") {
       header("Location: manage_side/management_side.php");

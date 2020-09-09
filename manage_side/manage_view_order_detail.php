@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -12,8 +14,6 @@ if (isset($_POST["btnSignOut"])) {
 }
 
 
-require_once("../connectconfig.php");
-
 $member_name = $_SESSION["member_name"];
 $orders_id = $_SESSION["orders_id"];
 
@@ -25,9 +25,11 @@ $sql_sum_price = <<<multi
   WHERE
       `orders_id` = '$orders_id'
 multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
+$sum_price_query = $db->prepare($sql_sum_price);
+$sum_price_query->execute();
+$sum_price = $sum_price_query->fetch(PDO::FETCH_ASSOC);
 
-$shipping = $sum_price[0] != null ? 60 : 0;
+$shipping = $sum_price['total_price'] != null ? 60 : 0;
 
 function query_order_detail()
 {
@@ -41,7 +43,7 @@ function query_order_detail()
     WHERE
       `orders_id` = $orders_id
   multi;
-  return $link->query($sql_product_cart);
+  return $db->prepare($sql_product_cart)->execute();
 }
 $order_detail = query_order_detail();
 ?>
@@ -163,7 +165,7 @@ $order_detail = query_order_detail();
             </tr>
           </thead>
           <tbody>
-            <?php while ($order_detail_data = $order_detail->fetch_assoc()) { ?>
+            <?php while ($order_detail_data = $order_detail->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $order_detail_data['product_name'] ?></td>
                 <td class="align-middle">

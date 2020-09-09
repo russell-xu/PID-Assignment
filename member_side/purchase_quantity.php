@@ -16,4 +16,4 @@ SET
 WHERE
     `username` = '$name' AND `product_id` = '$id'
 multi;
-$link->query($sql_update_quantity);
+$db->prepare($sql_update_quantity)->execute();

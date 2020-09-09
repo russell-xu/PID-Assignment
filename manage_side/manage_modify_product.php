@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 $error_message = "";
 
@@ -36,8 +37,8 @@ if (isset($_POST["submit_modify"])) {
       `product_description` = '$product_description'
     WHERE
       `product_id` = '$product_id'
-  multi;
-    $link->query($sql_update_product);
+    multi;
+    $db->prepare($sql_update_product)->execute();
     header("Location: commodity_management.php");
     exit();
   } else {
@@ -45,11 +46,8 @@ if (isset($_POST["submit_modify"])) {
   }
 }
 
-function query_product()
-{
-  $product_id = $_SESSION["product_id"];
-  require("../connectconfig.php");
-  $sql_product = <<<multi
+$product_id = $_SESSION["product_id"];
+$sql_product = <<<multi
     SELECT
       *
     FROM
@@ -57,10 +55,9 @@ function query_product()
     WHERE
       `product_id` = '$product_id'
   multi;
-  return $link->query($sql_product);
-}
-$query_product = query_product();
-$product = $query_product->fetch_assoc();
+$query_product = $db->prepare($sql_product);
+$query_product->execute();
+$product = $query_product->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>

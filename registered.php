@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once("connectconfig.php");
 
 if (isset($_POST["btnHome"])) {
   header("Location: index.php");
@@ -16,16 +17,41 @@ if (isset($_POST["btnOK"])) {
   $address = $_POST["registered_address"];
   $password = $_POST["registered_password"];
 
-  require_once("connectconfig.php");
+  $sql_user_data = <<<multi
+  SELECT
+    *
+  FROM
+    member
+  WHERE
+    username = '$username'
+  multi;
+  $user_data = $db->prepare($sql_user_data);
+  $user_data->execute();
+  $user_data_row_count = $user_data->rowCount();
 
-  $sql_username = "select * from member where username='$username'";
-  $username_num_rows = $link->query($sql_username)->num_rows;
+  $sql_email_data = <<<multi
+  SELECT
+    *
+  FROM
+    member
+  WHERE
+    email = '$email'
+  multi;
+  $email_data = $db->prepare($sql_email_data);
+  $email_data->execute();
+  $email_data_row_count = $email_data->rowCount();
 
-  $sql_email = "select * from member where email='$email'";
-  $email_num_rows = $link->query($sql_email)->num_rows;
-
-  $sql_cellphone = "select * from member where cellphone='$cellphone'";
-  $cellphone_num_rows = $link->query($sql_cellphone)->num_rows;
+  $sql_cellphone_data = <<<multi
+  SELECT
+    *
+  FROM
+    member
+  WHERE
+    cellphone = '$cellphone'
+  multi;
+  $cellphone_data = $db->prepare($sql_cellphone_data);
+  $cellphone_data->execute();
+  $cellphone_data_row_count = $cellphone_data->rowCount();
 
   $username_verification = trim($username) != "";
   $email_verification = filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -34,7 +60,7 @@ if (isset($_POST["btnOK"])) {
   $password_verification = preg_match('/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]{8}/', $password);
 
   if ($username_verification && $email_verification &&  $cellphone_verification && $address_verification && $password_verification) {
-    if ($username_num_rows == 0 && $email_num_rows == 0 && $cellphone_num_rows == 0) {
+    if ($user_data_row_count == 0 && $email_data_row_count == 0 && $cellphone_data_row_count == 0) {
       $_SESSION["userName"] = $username;
       $sql_registered = <<<multi
         INSERT INTO member(
@@ -52,7 +78,8 @@ if (isset($_POST["btnOK"])) {
             '$password'
         );
       multi;
-      $link->query($sql_registered);
+      $registered = $db->prepare($sql_registered);
+      $registered->execute();
       header("Location: registration_success.php");
       exit();
     } else {

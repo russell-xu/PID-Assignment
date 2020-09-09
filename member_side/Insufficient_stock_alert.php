@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 function Update_purchase_quantity()
 {
@@ -25,8 +26,10 @@ function Update_purchase_quantity()
     WHERE
         username = '$username'
     multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
+  $query_quantity = $db->prepare($sql_quantity);
+  $query_quantity->execute();
+  $quantity_row = $query_quantity->fetch(PDO::FETCH_ASSOC);
+  return $quantity_row['quantity'];
 }
 
 ?>

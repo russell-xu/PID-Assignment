@@ -1,9 +1,16 @@
 <?php
+$dbms = 'mysql';
+$host = 'localhost';
+$dbName = 'Weather_database';
+$user = 'root';
+$pass = 'root'; // MAMP:root
+$dsn = "$dbms:host=$host;dbname=$dbName";
 
-// MAMP uses the following scheme
-// $link = @new mysqli("localhost", "root", "root", "shopping_site_data", 8889);
-// $link->query("set names utf-8");
-
-// XAMPP uses the following scheme
-$link = @new mysqli("localhost", "root", "", "shopping_site_data", 3306);
-$link->query("set names utf-8");
+try {
+    $dbh = new PDO($dsn, $user, $pass);
+    // echo "連接成功<br/>";
+    $dbh = null;
+} catch (PDOException $e) {
+    die("Error!: " . $e->getMessage() . "<br/>");
+}
+$db = new PDO($dsn, $user, $pass, array(PDO::ATTR_PERSISTENT => true));

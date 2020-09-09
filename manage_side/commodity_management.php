@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] !== "admin") {
   header("Location: ../index.php");
   exit();
@@ -11,7 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
 if (isset($_POST["modify"])) {
   $_SESSION["product_id"] = $_POST["product_id"];
@@ -28,21 +29,17 @@ if (isset($_POST["delete"])) {
     WHERE
         `product_id` = '$product_id'
   multi;
-  $link->query($sql_product);
+  $db->prepare($sql_product)->execute();
 }
 
-function query_products()
-{
-  require("../connectconfig.php");
-  $sql_product = <<<multi
+$sql_product = <<<multi
     SELECT
       *
     FROM
       `product_list`
   multi;
-  return $link->query($sql_product);
-}
-$query_products = query_products();
+$query_products = $db->prepare($sql_product);
+$query_products->execute();
 ?>
 
 <!DOCTYPE html>
@@ -199,7 +196,7 @@ $query_products = query_products();
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_products_data = $query_products->fetch_assoc()) { ?>
+            <?php while ($query_products_data = $query_products->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $query_products_data['product_name'] ?></td>
                 <td class="align-middle">$<?= $query_products_data['product_price'] ?>

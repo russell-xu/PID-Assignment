@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: ../index.php");
   exit();
@@ -11,8 +13,6 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-
-require_once("../connectconfig.php");
 
 function query_orders()
 {
@@ -29,7 +29,7 @@ function query_orders()
       `orders_id`
     DESC
   multi;
-  return $link->query($sql_product_cart);
+  return $db->prepare($sql_product_cart)->execute();
 }
 $query_orders = query_orders();
 
@@ -140,7 +140,7 @@ if (isset($_POST["view_order_details"])) {
             </tr>
           </thead>
           <tbody>
-            <?php while ($query_orders_data = $query_orders->fetch_assoc()) { ?>
+            <?php while ($query_orders_data = $query_orders->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $query_orders_data['orders_id'] ?></td>
                 <td class="align-middle"><?= $query_orders_data['date'] ?>
