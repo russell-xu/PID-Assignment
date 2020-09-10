@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once("../connectconfig.php");
+
 if (!isset($_SESSION["username"]) || $_SESSION["username"] == "Guest") {
   header("Location: ../index.php");
   exit();
@@ -11,29 +13,24 @@ if (isset($_POST["btnSignOut"])) {
   exit();
 }
 
-require_once("../connectconfig.php");
 
-function grab_shopping_cart_information()
-{
-  require("../connectconfig.php");
-  $username = $_SESSION["username"];
-  $sql_product_cart = <<<multi
-    SELECT
-      a.quantity,
-      a.product_id,
-      b.product_name,
-      b.product_price,
-      b.product_stocks,
-      b.product_images
-    FROM
-      shopping_cart AS a
-    INNER JOIN product_list AS b
-    ON
-      a.product_id = b.product_id AND a.username = '$username'
-    multi;
-  return $link->query($sql_product_cart);
-}
-$shopping_cart_data = grab_shopping_cart_information();
+$username = $_SESSION["username"];
+$sql_product_cart = <<<multi
+  SELECT
+    a.quantity,
+    a.product_id,
+    b.product_name,
+    b.product_price,
+    b.product_stocks,
+    b.product_images
+  FROM
+    shopping_cart AS a
+  INNER JOIN product_list AS b
+  ON
+    a.product_id = b.product_id AND a.username = '$username'
+multi;
+$shopping_cart_data = $db->prepare($sql_product_cart);
+$shopping_cart_data->execute();
 
 function Update_purchase_quantity()
 {
@@ -41,14 +38,16 @@ function Update_purchase_quantity()
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
-        SUM(`quantity`)
+        SUM(`quantity`) AS `quantity`
     FROM
         shopping_cart
     WHERE
         username = '$username'
     multi;
-  $quantity_row = $link->query($sql_quantity)->fetch_row();
-  return $quantity_row[0];
+  $query_quantity = $db->prepare($sql_quantity);
+  $query_quantity->execute();
+  $quantity_row = $query_quantity->fetch(PDO::FETCH_ASSOC);
+  return $quantity_row['quantity'];
 }
 
 if (isset($_POST["delete_cart_product"])) {
@@ -64,24 +63,42 @@ if (isset($_POST["delete_cart_product"])) {
   WHERE
       username = '$username' AND product_id = '$product_id'
   multi;
-  $link->query($sql_delete_cart_product);
-  $shopping_cart_data = grab_shopping_cart_information();
+  $db->prepare($sql_delete_cart_product)->execute();
+
+  $sql_product_cart = <<<multi
+    SELECT
+      a.quantity,
+      a.product_id,
+      b.product_name,
+      b.product_price,
+      b.product_stocks,
+      b.product_images
+    FROM
+      shopping_cart AS a
+    INNER JOIN product_list AS b
+    ON
+      a.product_id = b.product_id AND a.username = '$username'
+  multi;
+  $shopping_cart_data = $db->prepare($sql_product_cart);
+  $shopping_cart_data->execute();
 }
 
 $username = $_SESSION["username"];
 
 $sql_sum_price = <<<multi
   SELECT
-      SUM(a.quantity * b.product_price)
+      SUM(a.quantity * b.product_price) AS `sum_price`
   FROM
       shopping_cart AS a
   INNER JOIN product_list AS b
   ON
       a.product_id = b.product_id AND a.username = '$username'
 multi;
-$sum_price = $link->query($sql_sum_price)->fetch_row();
+$query_sum_price = $db->prepare($sql_sum_price);
+$query_sum_price->execute();
+$sum_price = $query_sum_price->fetch(PDO::FETCH_ASSOC);
 
-$shipping = $sum_price[0] != null ? 60 : 0;
+$shipping = $sum_price['sum_price'] != null ? 60 : 0;
 
 $error_message = "";
 
@@ -99,8 +116,9 @@ function check_stock_sufficient()
     ON
       a.product_id = b.product_id AND a.username = '$username'
     multi;
-  $product_stocks_data = $link->query($sql_product_cart);
-  while ($stocks_data = $product_stocks_data->fetch_assoc()) {
+  $product_stocks_data = $db->prepare($sql_product_cart);
+  $product_stocks_data->execute();
+  while ($stocks_data = $product_stocks_data->fetch(PDO::FETCH_ASSOC)) {
     if ($stocks_data['product_stocks'] < $stocks_data['quantity']) {
       return false;
     }
@@ -130,7 +148,7 @@ if (isset($_POST["checkout_btn"])) {
             '$username'
         );
       multi;
-      $link->query($sql_add_order);
+      $db->prepare($sql_add_order)->execute();
 
       $sql_order_id = <<<multi
         SELECT
@@ -142,9 +160,11 @@ if (isset($_POST["checkout_btn"])) {
         DESC
         LIMIT 0, 1
       multi;
-      $order_id_row = $link->query($sql_order_id)->fetch_row();
+      $query_order_id_row = $db->prepare($sql_order_id);
+      $query_order_id_row->execute();
+      $order_id_row = $query_order_id_row->fetch(PDO::FETCH_ASSOC);
 
-      while ($cart_data = $shopping_cart_data->fetch_assoc()) {
+      while ($cart_data = $shopping_cart_data->fetch(PDO::FETCH_ASSOC)) {
         $sql_checkout = <<<multi
           INSERT INTO order_detail(
               `orders_id`,
@@ -163,7 +183,7 @@ if (isset($_POST["checkout_btn"])) {
               '{$cart_data['product_images']}'
           );
         multi;
-        $link->query($sql_checkout);
+        $db->prepare($sql_checkout)->execute();
 
         // reduce_stocks
         $sql_product_stocks = <<<multi
@@ -174,19 +194,23 @@ if (isset($_POST["checkout_btn"])) {
           WHERE
             product_id = '{$cart_data['product_id']}'
         multi;
-        $product_stocks_row = $link->query($sql_product_stocks)->fetch_row();
+        $query_product_stocks_row = $db->prepare($sql_product_stocks);
+        $query_product_stocks_row->execute();
+        $product_stocks_row = $query_product_stocks_row->fetch(PDO::FETCH_ASSOC);
 
         $sql_quantity = <<<multi
           SELECT
-            SUM(quantity)
+            SUM(quantity) AS `quantity`
           FROM
             shopping_cart
           WHERE
             username = '$username' AND product_id = '{$cart_data['product_id']}'
         multi;
-        $quantity_row = $link->query($sql_quantity)->fetch_row();
+        $query_quantity_row = $db->prepare($sql_quantity);
+        $query_quantity_row->execute();
+        $quantity_row = $query_quantity_row->fetch(PDO::FETCH_ASSOC);
 
-        $reduced_quantity = $product_stocks_row[0] - $quantity_row[0];
+        $reduced_quantity = $product_stocks_row['product_stocks'] - $quantity_row['quantity'];
 
         $sql_reduce_stocks = <<<multi
           UPDATE
@@ -196,7 +220,7 @@ if (isset($_POST["checkout_btn"])) {
           WHERE
             `product_id` = '{$cart_data['product_id']}'
         multi;
-        $link->query($sql_reduce_stocks);
+        $db->prepare($sql_reduce_stocks)->execute();
       }
 
       $sql_delete_cart = <<<multi
@@ -206,7 +230,7 @@ if (isset($_POST["checkout_btn"])) {
         WHERE
             username = '$username'
       multi;
-      $link->query($sql_delete_cart);
+      $db->prepare($sql_delete_cart)->execute();
 
       header("Location: checkout_successful.php");
       exit();
@@ -343,7 +367,7 @@ if (isset($_POST["checkout_btn"])) {
             </tr>
           </thead>
           <tbody>
-            <?php while ($cart_data = $shopping_cart_data->fetch_assoc()) { ?>
+            <?php while ($cart_data = $shopping_cart_data->fetch(PDO::FETCH_ASSOC)) { ?>
               <tr class="text-center">
                 <td class="align-middle"><?= $cart_data['product_name'] ?></td>
                 <td class="align-middle">
@@ -368,7 +392,7 @@ if (isset($_POST["checkout_btn"])) {
             <tr class="table-info">
               <td colspan="7">
                 <span>運費：$<?= $shipping ?></span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] + $shipping ?></h3>
+                <h3 id="total_amount">總金額：$<?= $sum_price['sum_price'] + $shipping ?></h3>
                 <label for="cars">選擇付費方式：</label>
                 <select name="paytype" form="checkout">
                   <option value="ATM匯款">ATM匯款</option>
