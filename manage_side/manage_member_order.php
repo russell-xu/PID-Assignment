@@ -14,11 +14,8 @@ if (isset($_POST["btnSignOut"])) {
 }
 
 
-function query_orders()
-{
-  require("../connectconfig.php");
-  $member_name = $_SESSION["member_name"];
-  $sql_product_cart = <<<multi
+$member_name = $_SESSION["member_name"];
+$sql_product_cart = <<<multi
     SELECT
       *
     FROM
@@ -29,9 +26,9 @@ function query_orders()
       `orders_id`
     DESC
   multi;
-  return $db->prepare($sql_product_cart)->execute();
-}
-$query_orders = query_orders();
+$query_orders = $db->prepare($sql_product_cart);
+$query_orders->execute();
+
 
 if (isset($_POST["view_order_details"])) {
   $_SESSION["orders_id"] = $_POST["orders_id"];

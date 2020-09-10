@@ -47,10 +47,7 @@ if (isset($_POST["view_order_details"])) {
   exit();
 }
 
-function query_orders()
-{
-  require("../connectconfig.php");
-  $sql_product_cart = <<<multi
+$sql_product_cart = <<<multi
     SELECT
       *
     FROM
@@ -59,9 +56,9 @@ function query_orders()
       `orders_id`
     DESC
   multi;
-  return $db->prepare($sql_product_cart)->execute();
-}
-$query_orders = query_orders();
+$query_orders = $db->prepare($sql_product_cart);
+$query_orders->execute();
+
 ?>
 
 <!DOCTYPE html>

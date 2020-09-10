@@ -128,7 +128,7 @@ function check_stock_sufficient()
 
 if (isset($_POST["checkout_btn"])) {
   if (check_stock_sufficient()) {
-    if ($sum_price[0] != null) {
+    if ($sum_price['sum_price'] != null) {
 
       global $shopping_cart_data;
       global $sum_price;

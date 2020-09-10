@@ -4,17 +4,20 @@ require_once("connectconfig.php");
 
 $ErrorMessage = "";
 
+
 if (isset($_POST["btnOK"])) {
   $username = $_POST["username"];
   $password = $_POST["password"];
 
   $sql_user_data = <<<multi
   SELECT
-    *
+    `username`,
+    `password`,
+    `status`
   FROM
     member
   WHERE
-    username = ?
+    `username` = ?
   multi;
   $user_data = $db->prepare($sql_user_data);
   $user_data->execute([$username]);

@@ -31,11 +31,8 @@ $sum_price = $sum_price_query->fetch(PDO::FETCH_ASSOC);
 
 $shipping = $sum_price['total_price'] != null ? 60 : 0;
 
-function query_order_detail()
-{
-  require("../connectconfig.php");
-  $orders_id = $_SESSION["orders_id"];
-  $sql_product_cart = <<<multi
+$orders_id = $_SESSION["orders_id"];
+$sql_product_cart = <<<multi
     SELECT
       *
     FROM
@@ -43,9 +40,9 @@ function query_order_detail()
     WHERE
       `orders_id` = $orders_id
   multi;
-  return $db->prepare($sql_product_cart)->execute();
-}
-$order_detail = query_order_detail();
+$order_detail = $db->prepare($sql_product_cart);
+$order_detail->execute();
+
 ?>
 
 <!DOCTYPE html>
@@ -179,7 +176,7 @@ $order_detail = query_order_detail();
             <tr class="table-info">
               <td colspan="5">
                 <span>運費：$<?= $shipping ?></span>
-                <h3 id="total_amount">總金額：$<?= $sum_price[0] ?></h3>
+                <h3 id="total_amount">總金額：$<?= $sum_price['total_price'] ?></h3>
               </td>
             </tr>
           </tbody>

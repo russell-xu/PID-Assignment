@@ -17,5 +17,7 @@ WHERE `date` BETWEEN '$start_date' AND '$end_date 23:59:59'
 GROUP BY
     `datetime`
 multi;
-$rows = $link->query($sql_single_day_revenue)->fetch_all(MYSQLI_ASSOC);
-echo json_encode($rows, true);
+$rows = $db->prepare($sql_single_day_revenue);
+$rows->execute();
+$result = $rows->fetchALL(PDO::FETCH_ASSOC);
+echo json_encode($result, true);

@@ -63,12 +63,12 @@ function Update_purchase_quantity()
   $username = $_SESSION["username"];
   $sql_quantity = <<<multi
     SELECT
-        SUM(`quantity`)
+        SUM(`quantity`) AS `quantity`
     FROM
         shopping_cart
     WHERE
         username = '$username'
-    multi;
+  multi;
   $query_quantity = $db->prepare($sql_quantity);
   $query_quantity->execute();
   $quantity_row = $query_quantity->fetch(PDO::FETCH_ASSOC);

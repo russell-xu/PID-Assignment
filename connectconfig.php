@@ -1,7 +1,7 @@
 <?php
 $dbms = 'mysql';
 $host = 'localhost';
-$dbName = 'Weather_database';
+$dbName = 'shopping_site_data';
 $user = 'root';
 $pass = 'root'; // MAMP:root
 $dsn = "$dbms:host=$host;dbname=$dbName";
